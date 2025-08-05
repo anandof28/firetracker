@@ -1,5 +1,5 @@
-import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/mutual-funds - Get all mutual funds for the authenticated user

@@ -1,5 +1,5 @@
-import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 // POST /api/mutual-funds/update-navs - Update NAVs for all user's mutual funds
