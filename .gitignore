@@ -39,3 +39,74 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
+/prisma/test.db
+/prisma/test.db-journal
+# Keep the migration folder structure but ignore individual SQL files if sensitive
+# /prisma/migrations/*.sql
+
+# database files
+*.db
+*.sqlite
+*.sqlite3
+
+# generated files
+/src/generated/prisma
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+*.lcov
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional caches
+.npm
+.eslintcache
+.node_repl_history
+
+# Build outputs
+*.tgz
+.cache
+.parcel-cache
+.fusebox/
+.dynamodb/
+.tern-port
+
+# Temporary folders
+tmp/
+temp/
+
+# Backup files
+*.bak
+*.backup
+*.old
