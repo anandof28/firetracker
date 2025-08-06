@@ -4,17 +4,18 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
     const body = await request.json()
     const { category, limit, period, endDate, isActive } = body
+    const resolvedParams = await params
 
     // First verify the budget belongs to the authenticated user
     const existingBudget = await prisma.budget.findFirst({
       where: {
-        id: params.id,
+        id: resolvedParams.id,
         userId: userId,
       },
     })
@@ -24,7 +25,7 @@ export async function PUT(
     }
 
     const budget = await prisma.budget.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         ...(category !== undefined && { category }),
         ...(limit !== undefined && { limit: parseFloat(limit) }),
@@ -46,15 +47,16 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
+    const resolvedParams = await params
 
     // First verify the budget belongs to the authenticated user
     const existingBudget = await prisma.budget.findFirst({
       where: {
-        id: params.id,
+        id: resolvedParams.id,
         userId: userId,
       },
     })
@@ -64,7 +66,7 @@ export async function DELETE(
     }
 
     await prisma.budget.delete({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     })
 
     return NextResponse.json({ message: 'Budget deleted successfully' })
