@@ -1,0 +1,49 @@
+{
+  "name": "fire-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:deploy": "prisma generate && NODE_ENV=production DISABLE_ESLINT=true ESLINT_NO_DEV_ERRORS=true TSC_COMPILE_ON_ERROR=true next build --no-lint",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix", 
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache",
+    "dev:clean": "npm run clean && next dev"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.28.1",
+    "@prisma/client": "^6.13.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-datepicker": "^6.2.0",
+    "@types/react-dom": "^19",
+    "ag-grid-community": "^34.1.0",
+    "ag-grid-react": "^34.1.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.5",
+    "next": "15.4.5",
+    "prisma": "^6.13.0",
+    "react": "19.1.0",
+    "react-datepicker": "^8.4.0",
+    "react-dom": "19.1.0",
+    "react-hot-toast": "^2.5.2",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vercel": "^44.7.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5"
+  }
+}

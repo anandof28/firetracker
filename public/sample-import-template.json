@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2024-08-04T10:30:00Z",
+    "description": "Fire Tracker Portfolio Import Template",
+    "instructions": "Fill in your financial data according to the format below. Delete sample data and replace with your own."
+  },
+  "accounts": [
+    {
+      "name": "IDFC First Bank - Savings",
+      "balance": 150000.50,
+      "note": "Primary savings account"
+    },
+    {
+      "name": "SBI - Current Account",
+      "balance": 75000.00,
+      "note": "Business current account"
+    },
+    {
+      "name": "HDFC - Joint Account",
+      "balance": 250000.00,
+      "note": "Joint savings with spouse"
+    }
+  ],
+  "fixedDeposits": [
+    {
+      "accountName": "IDFC First Bank - Savings",
+      "amount": 100000.00,
+      "rate": 7.5,
+      "startDate": "2024-01-15",
+      "endDate": "2025-01-15",
+      "note": "1-year FD at 7.5% interest"
+    },
+    {
+      "accountName": "SBI - Current Account",
+      "amount": 200000.00,
+      "rate": 8.0,
+      "startDate": "2024-03-10",
+      "endDate": "2027-03-10",
+      "note": "3-year FD at 8% interest"
+    }
+  ],
+  "goldInvestments": [
+    {
+      "date": "2024-02-14",
+      "grams": 50.0,
+      "value": 300000.00,
+      "note": "Gold coins purchase on Valentine's Day"
+    },
+    {
+      "date": "2024-06-01",
+      "grams": 25.5,
+      "value": 160000.00,
+      "note": "Gold jewelry purchase"
+    }
+  ],
+  "transactions": [
+    {
+      "date": "2024-08-01",
+      "type": "income",
+      "amount": 75000.00,
+      "category": "Salary",
+      "note": "Monthly salary",
+      "accountName": "IDFC First Bank - Savings"
+    },
+    {
+      "date": "2024-08-02",
+      "type": "expense",
+      "amount": 5000.00,
+      "category": "Grocery",
+      "note": "Monthly groceries",
+      "accountName": "IDFC First Bank - Savings"
+    },
+    {
+      "date": "2024-08-03",
+      "type": "expense",
+      "amount": 2500.00,
+      "category": "Utility",
+      "note": "Electricity bill",
+      "accountName": "IDFC First Bank - Savings"
+    },
+    {
+      "date": "2024-08-04",
+      "type": "income",
+      "amount": 1200.00,
+      "category": "Interest",
+      "note": "Bank interest credited",
+      "accountName": "IDFC First Bank - Savings"
+    }
+  ],
+  "formatGuide": {
+    "accounts": {
+      "name": "Account name (required, string)",
+      "balance": "Current balance (required, number)",
+      "note": "Optional description (optional, string)"
+    },
+    "fixedDeposits": {
+      "accountName": "Must match an account name exactly (required, string)",
+      "amount": "FD principal amount (required, number)",
+      "rate": "Interest rate percentage (required, number, e.g. 7.5 for 7.5%)",
+      "startDate": "Start date in YYYY-MM-DD format (required, string)",
+      "endDate": "Maturity date in YYYY-MM-DD format (required, string)",
+      "note": "Optional description (optional, string)"
+    },
+    "goldInvestments": {
+      "date": "Purchase date in YYYY-MM-DD format (required, string)",
+      "grams": "Weight in grams (required, number)",
+      "value": "Purchase value in INR (required, number)",
+      "note": "Optional description (optional, string)"
+    },
+    "transactions": {
+      "date": "Transaction date in YYYY-MM-DD format (required, string)",
+      "type": "Either 'income' or 'expense' (required, string)",
+      "amount": "Transaction amount (required, number)",
+      "category": "Transaction category (required, string)",
+      "note": "Transaction description (optional, string)",
+      "accountName": "Must match an account name exactly (optional, string)"
+    }
+  },
+  "validationRules": {
+    "dates": "All dates must be in YYYY-MM-DD format",
+    "amounts": "All amounts must be positive numbers",
+    "accountReferences": "Account names in FDs and transactions must exactly match account names defined in accounts section",
+    "transactionTypes": "Transaction type must be either 'income' or 'expense'",
+    "required": "Fields marked as required cannot be empty or null"
+  }
+}
