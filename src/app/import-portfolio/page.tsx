@@ -131,7 +131,7 @@ export default function ImportPortfolioPage() {
 
         {/* Portfolio Summary */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">📈 Portfolio Summary to Import</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">📈 Sample Portfolio Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">17</div>
@@ -413,10 +413,10 @@ export default function ImportPortfolioPage() {
               <div>
                 <h3 className="font-medium text-gray-800">Sample Accounts:</h3>
                 <div className="text-sm text-gray-600 mt-1">
-                  • IDFC - ANAND - 4591: ₹10,31,110<br/>
-                  • IOB JOINT - 0208: ₹23,91,458<br/>
-                  • CCB - JOINT - 6972: ₹13,68,859<br/>
-                  • + 14 more accounts
+                  • HDFC Savings Account: ₹10,31,110<br/>
+                  • SBI Joint Account: ₹23,91,458<br/>
+                  • ICICI Current Account: ₹13,68,859<br/>
+                  • + 14 more sample accounts
                 </div>
               </div>
               <div>
