@@ -461,10 +461,10 @@ export default function LandingPage() {
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Help Center</li>
-                <li>Contact Us</li>
-                <li>Beta Feedback</li>
-                <li>Feature Requests</li>
+                <li><Link href="/support/help-center" className="hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/support/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                <li><Link href="/support/feedback" className="hover:text-white transition-colors">Beta Feedback</Link></li>
+                <li><Link href="/support/feature-requests" className="hover:text-white transition-colors">Feature Requests</Link></li>
               </ul>
             </div>
             
