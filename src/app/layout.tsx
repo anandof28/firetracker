@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import FirstTimeUserGuide from "@/components/FirstTimeUserGuide";
 import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -32,6 +33,7 @@ export default function RootLayout({
           <main className="bg-gray-50">
             {children}
           </main>
+          <FirstTimeUserGuide />
         </body>
       </html>
     </ClerkProvider>

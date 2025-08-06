@@ -4,12 +4,13 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
     const body = await request.json()
     const { amount, note, date } = body
+    const params = await context.params
 
     if (!amount || amount <= 0) {
       return NextResponse.json(
@@ -59,10 +60,11 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
+    const params = await context.params
 
     // First verify the goal belongs to the authenticated user
     const goal = await prisma.goal.findFirst({

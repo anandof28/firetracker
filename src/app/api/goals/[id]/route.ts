@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
+    const params = await context.params
 
     const goal = await prisma.goal.findFirst({
       where: { 
@@ -35,12 +36,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
     const body = await request.json()
     const { title, targetAmount, targetDate, category, description, isCompleted } = body
+    const params = await context.params
 
     // First verify the goal belongs to the authenticated user
     const existingGoal = await prisma.goal.findFirst({
@@ -81,10 +83,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await getAuthenticatedUser()
+    const params = await context.params
 
     // First verify the goal belongs to the authenticated user
     const existingGoal = await prisma.goal.findFirst({

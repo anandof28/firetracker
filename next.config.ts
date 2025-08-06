@@ -2,13 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   eslint: {
-    // Disable ESLint during builds for deployment
+    // Completely disable ESLint during builds for deployment
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Disable TypeScript errors during builds for deployment
+    // Allow production builds to successfully complete even if there are TypeScript errors
     ignoreBuildErrors: true,
   },
-  // Disable telemetry
-  telemetry: false,
+  // Disable experimental features that might cause issues
+  experimental: {
+    // Disable any experimental linting
+    forceSwcTransforms: true,
+  },
+  // Disable linting and type checking during builds
+  swcMinify: true,
 };

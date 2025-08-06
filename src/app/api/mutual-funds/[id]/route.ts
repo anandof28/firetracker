@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // DELETE /api/mutual-funds/[id] - Delete a specific mutual fund investment
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
@@ -14,6 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const params = await context.params
     const { id } = params
 
     if (!id) {
@@ -43,7 +44,7 @@ export async function DELETE(
 // PUT /api/mutual-funds/[id] - Update a specific mutual fund investment
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
@@ -52,6 +53,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const params = await context.params
     const { id } = params
     const body = await request.json()
     const { units, avgPrice, totalInvested, currentNAV, notes, isActive, tags, investmentType } = body

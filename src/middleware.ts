@@ -18,7 +18,8 @@ const isProtectedRoute = createRouteMatcher([
 ])
 
 const isPublicApiRoute = createRouteMatcher([
-  '/api/gold-rate'
+  '/api/gold-rate',
+  '/api/test-db'
 ])
 
 export default clerkMiddleware(async (auth, req) => {

@@ -258,7 +258,7 @@ export default function GoalsPage() {
 
         {/* Add Goal Form */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
               <h2 className="text-xl font-bold mb-4">Add New Goal</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -354,7 +354,7 @@ export default function GoalsPage() {
 
         {/* Add Funds Form */}
         {showFundForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
               <h2 className="text-xl font-bold mb-4">Add Funds to Goal</h2>
               <form onSubmit={(e) => {

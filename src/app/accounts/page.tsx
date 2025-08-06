@@ -1,6 +1,7 @@
 'use client'
 
 import DataGrid from '@/components/DataGrid'
+import { useAuth, useUser } from '@clerk/nextjs'
 import { useEffect, useState } from 'react'
 
 interface Account {
@@ -11,6 +12,8 @@ interface Account {
 }
 
 export default function AccountsPage() {
+  const { isLoaded, isSignedIn } = useAuth()
+  const { user } = useUser()
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
@@ -18,6 +21,12 @@ export default function AccountsPage() {
   const [accountForm, setAccountForm] = useState({ name: '', balance: '' })
 
   const fetchAccounts = async () => {
+    if (!isSignedIn) {
+      setError('Please sign in to view accounts')
+      setLoading(false)
+      return
+    }
+    
     try {
       const response = await fetch('/api/accounts')
       if (response.ok) {
@@ -25,7 +34,11 @@ export default function AccountsPage() {
         console.log('Fetched accounts data:', data)
         setAccounts(data)
       } else {
-        setError('Failed to fetch accounts')
+        if (response.status === 401) {
+          setError('Please sign in to view accounts')
+        } else {
+          setError('Failed to fetch accounts')
+        }
       }
     } catch (err) {
       console.error('Error fetching accounts:', err)
@@ -37,8 +50,10 @@ export default function AccountsPage() {
 
   useEffect(() => {
     setMounted(true)
-    fetchAccounts()
-  }, [])
+    if (isLoaded) {
+      fetchAccounts()
+    }
+  }, [isLoaded, isSignedIn])
 
   const createAccount = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,7 +102,24 @@ export default function AccountsPage() {
     };
   }, []);
 
-  if (!mounted || loading) return <div className="p-6">Loading...</div>
+  if (!mounted || !isLoaded || loading) return <div className="p-6">Loading...</div>
+
+  if (!isSignedIn) {
+    return (
+      <div className="p-6">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 text-center">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-4">Please sign in to access your accounts.</p>
+          <a 
+            href="/sign-in" 
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          >
+            Sign In
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6">
