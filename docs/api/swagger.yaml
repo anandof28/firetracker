@@ -1,0 +1,1912 @@
+# FIRE Simulator
+  /fire-simulator:
+    get:
+      tags:
+        - FIRE
+      summary: Simulate FIRE (Financial Independence, Retire Early)
+      description: |
+        Calculate FIRE stats and projections for the authenticated user based on their portfolio, income, and expenses.
+        
+        Optional query params:
+        - `currentAge` (default: 32)
+        - `retirementAge` (default: 50)
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: currentAge
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 32
+        - name: retirementAge
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: FIRE simulation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FireSimulatorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - FIRE
+      summary: Simulate FIRE (Financial Independence, Retire Early)
+      description: |
+        Calculate FIRE stats and projections for the authenticated user based on their portfolio, income, and expenses.
+        
+        Optional body params:
+        - `currentAge` (default: 32)
+        - `retirementAge` (default: 50)
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentAge:
+                  type: integer
+                  default: 32
+                retirementAge:
+                  type: integer
+                  default: 50
+      responses:
+        '200':
+          description: FIRE simulation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FireSimulatorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    FireSimulatorResponse:
+      type: object
+      properties:
+        currentPortfolio:
+          type: number
+          description: Current total portfolio value
+          example: 1500000
+        monthlyIncome:
+          type: number
+          description: Average monthly income (last 12 months)
+          example: 80000
+        monthlyExpenses:
+          type: number
+          description: Average monthly expenses (last 12 months)
+          example: 40000
+        annualExpenses:
+          type: number
+          description: Annualized expenses
+          example: 480000
+        fireNumber:
+          type: number
+          description: Target FIRE number (annual expenses x 25)
+          example: 12000000
+        yearsToFI:
+          type: integer
+          description: Projected years to reach FIRE (or -1 if unreachable)
+          example: 8
+        canRetireAtTargetAge:
+          type: boolean
+          description: Whether projected portfolio at retirement meets FIRE number
+          example: true
+        projectedPortfolioAtRetirement:
+          type: number
+          description: Projected portfolio value at retirement age
+          example: 14000000
+        fiPercentage:
+          type: number
+          description: Current progress towards FIRE number (percentage)
+          example: 12.5
+        projection:
+          type: array
+          description: Yearly projection of portfolio value by age
+          items:
+            type: object
+            properties:
+              age:
+                type: integer
+                example: 32
+              portfolio:
+                type: number
+                example: 1500000
+openapi: 3.0.3
+info:
+  title: Fire Tracker API
+  description: |
+    A comprehensive financial portfolio management API that helps users track their investments, transactions, goals, and budgets.
+    
+    ## Authentication
+    This API uses Clerk authentication with JWT tokens. All endpoints (except public ones like gold rates) require authentication.
+    
+    ## Features
+    - **Portfolio Management**: Track multiple accounts, FDs, gold investments, and mutual funds
+    - **Transaction Tracking**: Record income and expenses with detailed categorization
+    - **Goal Setting**: Set and track financial goals with progress monitoring
+    - **Budget Management**: Create and monitor spending budgets by category
+    - **Market Data**: Get real-time gold and silver rates
+    - **Import/Export**: Import portfolio data from various formats
+    - **Reporting**: Generate comprehensive financial reports
+    
+  version: 1.0.0
+  contact:
+    name: Fire Tracker API Support
+    email: support@firetracker.app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://fire-tracker.vercel.app/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - ClerkAuth: []
+
+paths:
+  # Authentication & User Management
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Retrieve the authenticated user's profile information
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Accounts Management
+  /accounts:
+    get:
+      tags:
+        - Accounts
+      summary: Get all user accounts
+      description: Retrieve all accounts belonging to the authenticated user
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: Accounts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    post:
+      tags:
+        - Accounts
+      summary: Create a new account
+      description: Create a new financial account
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - balance
+              properties:
+                name:
+                  type: string
+                  example: "HDFC Savings Account"
+                balance:
+                  type: number
+                  format: float
+                  example: 50000.00
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /accounts/{id}:
+    get:
+      tags:
+        - Accounts
+      summary: Get specific account
+      description: Retrieve a specific account by ID
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Account retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    
+    put:
+      tags:
+        - Accounts
+      summary: Update account
+      description: Update an existing account
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                balance:
+                  type: number
+                  format: float
+      responses:
+        '200':
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    
+    delete:
+      tags:
+        - Accounts
+      summary: Delete account
+      description: Delete an account and all associated data
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Account deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Transactions Management
+  /transactions:
+    get:
+      tags:
+        - Transactions
+      summary: Get all transactions
+      description: Retrieve transactions with optional filtering
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: category
+          in: query
+          description: Filter by transaction category
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Filter by transaction type
+          schema:
+            type: string
+            enum: [income, expense]
+        - name: startDate
+          in: query
+          description: Filter transactions from this date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: Filter transactions until this date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    
+    post:
+      tags:
+        - Transactions
+      summary: Create a new transaction
+      description: Create a new income or expense transaction
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - amount
+                - category
+                - accountId
+              properties:
+                type:
+                  type: string
+                  enum: [income, expense]
+                amount:
+                  type: number
+                  format: float
+                  example: 1500.00
+                category:
+                  type: string
+                  example: "Groceries"
+                note:
+                  type: string
+                  example: "Weekly grocery shopping"
+                accountId:
+                  type: string
+                  format: uuid
+                date:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /transactions/{id}:
+    get:
+      tags:
+        - Transactions
+      summary: Get specific transaction
+      description: Retrieve a specific transaction by ID
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transaction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    put:
+      tags:
+        - Transactions
+      summary: Update transaction
+      description: Update an existing transaction
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionInput'
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    
+    delete:
+      tags:
+        - Transactions
+      summary: Delete transaction
+      description: Delete a transaction
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Transaction deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Fixed Deposits (FDs)
+  /fds:
+    get:
+      tags:
+        - Fixed Deposits
+      summary: Get all fixed deposits
+      description: Retrieve all FDs belonging to the authenticated user
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: FDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FD'
+    
+    post:
+      tags:
+        - Fixed Deposits
+      summary: Create a new fixed deposit
+      description: Create a new FD investment
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - rate
+                - startDate
+                - endDate
+                - accountId
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  example: 100000.00
+                rate:
+                  type: number
+                  format: float
+                  example: 7.5
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+                accountId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: FD created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FD'
+
+  /fds/{id}:
+    get:
+      tags:
+        - Fixed Deposits
+      summary: Get specific FD
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: FD retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FD'
+    
+    put:
+      tags:
+        - Fixed Deposits
+      summary: Update FD
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FDInput'
+      responses:
+        '200':
+          description: FD updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FD'
+    
+    delete:
+      tags:
+        - Fixed Deposits
+      summary: Delete FD
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: FD deleted successfully
+
+  # Gold Investments
+  /gold:
+    get:
+      tags:
+        - Gold Investments
+      summary: Get all gold investments
+      description: Retrieve all gold investments belonging to the authenticated user
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: Gold investments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gold'
+    
+    post:
+      tags:
+        - Gold Investments
+      summary: Add gold investment
+      description: Record a new gold investment
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - grams
+                - value
+              properties:
+                grams:
+                  type: number
+                  format: float
+                  example: 10.5
+                value:
+                  type: number
+                  format: float
+                  example: 55000.00
+                date:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Gold investment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gold'
+
+  /gold/{id}:
+    get:
+      tags:
+        - Gold Investments
+      summary: Get specific gold investment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Gold investment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gold'
+    
+    put:
+      tags:
+        - Gold Investments
+      summary: Update gold investment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoldInput'
+      responses:
+        '200':
+          description: Gold investment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gold'
+    
+    delete:
+      tags:
+        - Gold Investments
+      summary: Delete gold investment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Gold investment deleted successfully
+
+  # Mutual Funds
+  /mutual-funds:
+    get:
+      tags:
+        - Mutual Funds
+      summary: Get all mutual fund investments
+      description: Retrieve all mutual fund investments belonging to the authenticated user
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: Mutual fund investments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MutualFund'
+    
+    post:
+      tags:
+        - Mutual Funds
+      summary: Add mutual fund investment
+      description: Record a new mutual fund investment
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutualFundInput'
+      responses:
+        '201':
+          description: Mutual fund investment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutualFund'
+
+  /mutual-funds/search:
+    get:
+      tags:
+        - Mutual Funds
+      summary: Search mutual fund schemes
+      description: Search for mutual fund schemes by name or AMC
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Search query for scheme name or AMC
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of results to return
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MutualFundScheme'
+
+  /mutual-funds/{id}:
+    get:
+      tags:
+        - Mutual Funds
+      summary: Get specific mutual fund investment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mutual fund investment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutualFund'
+    
+    put:
+      tags:
+        - Mutual Funds
+      summary: Update mutual fund investment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutualFundInput'
+      responses:
+        '200':
+          description: Mutual fund investment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutualFund'
+    
+    delete:
+      tags:
+        - Mutual Funds
+      summary: Delete mutual fund investment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Mutual fund investment deleted successfully
+
+  # Goals Management
+  /goals:
+    get:
+      tags:
+        - Goals
+      summary: Get all financial goals
+      description: Retrieve all goals belonging to the authenticated user
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: Goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+    
+    post:
+      tags:
+        - Goals
+      summary: Create a new financial goal
+      description: Create a new financial goal to track
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalInput'
+      responses:
+        '201':
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+
+  /goals/{id}:
+    get:
+      tags:
+        - Goals
+      summary: Get specific goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Goal retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+    
+    put:
+      tags:
+        - Goals
+      summary: Update goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalInput'
+      responses:
+        '200':
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+    
+    delete:
+      tags:
+        - Goals
+      summary: Delete goal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Goal deleted successfully
+
+  # Budget Management
+  /budgets:
+    get:
+      tags:
+        - Budgets
+      summary: Get all budgets
+      description: Retrieve all budgets belonging to the authenticated user
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: Budgets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+    
+    post:
+      tags:
+        - Budgets
+      summary: Create a new budget
+      description: Create a new spending budget for a category
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetInput'
+      responses:
+        '201':
+          description: Budget created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+
+  /budgets/{id}:
+    get:
+      tags:
+        - Budgets
+      summary: Get specific budget
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Budget retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+    
+    put:
+      tags:
+        - Budgets
+      summary: Update budget
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetInput'
+      responses:
+        '200':
+          description: Budget updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+    
+    delete:
+      tags:
+        - Budgets
+      summary: Delete budget
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Budget deleted successfully
+
+  # Market Data (Public endpoints)
+  /gold-rate:
+    get:
+      tags:
+        - Market Data
+      summary: Get current gold and silver rates
+      description: Get real-time gold (22K) and silver rates from multiple sources
+      security: []
+      responses:
+        '200':
+          description: Current rates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goldRate22k:
+                    type: number
+                    format: float
+                    description: Current 22K gold rate per gram in INR
+                    example: 5850.00
+                  silverRate:
+                    type: number
+                    format: float
+                    description: Current silver rate per gram in INR
+                    example: 75.50
+                  source:
+                    type: string
+                    description: Source of the rate data
+                    example: "GRT Jewels"
+                  success:
+                    type: boolean
+                    description: Whether the rates were fetched successfully
+                    example: true
+                  lastUpdated:
+                    type: string
+                    format: date-time
+                    description: When the rates were last updated
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Portfolio Import/Export
+  /import-portfolio:
+    post:
+      tags:
+        - Portfolio
+      summary: Import portfolio data
+      description: Import portfolio data from file upload or JSON payload
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV or Excel file containing portfolio data
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  description: Portfolio data to import
+                  properties:
+                    accounts:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/AccountInput'
+                    transactions:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TransactionInput'
+                    fds:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/FDInput'
+                    gold:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/GoldInput'
+                    goals:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/GoalInput'
+      responses:
+        '200':
+          description: Portfolio data imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Portfolio imported successfully"
+                  summary:
+                    type: object
+                    properties:
+                      accountsImported:
+                        type: integer
+                      transactionsImported:
+                        type: integer
+                      fdsImported:
+                        type: integer
+                      goldImported:
+                        type: integer
+                      goalsImported:
+                        type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Reports and Analytics
+  /reports:
+    get:
+      tags:
+        - Reports
+      summary: Get financial reports
+      description: Generate comprehensive financial reports and analytics
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          description: Type of report to generate
+          schema:
+            type: string
+            enum: [overview, detailed, category-wise, monthly, yearly]
+        - name: startDate
+          in: query
+          description: Start date for the report (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: End date for the report (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancialReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Database Test (Development only)
+  /test-db:
+    get:
+      tags:
+        - Development
+      summary: Test database connection
+      description: Test the database connection (development only)
+      security: []
+      responses:
+        '200':
+          description: Database connection successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "Database connection successful"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk JWT token for authentication
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Clerk user ID
+          example: "user_2abc123def456"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "HDFC Savings Account"
+        balance:
+          type: number
+          format: float
+          example: 50000.00
+        createdAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+          format: float
+          example: 1500.00
+        category:
+          type: string
+          example: "Groceries"
+        note:
+          type: string
+          example: "Weekly grocery shopping"
+        date:
+          type: string
+          format: date-time
+        accountId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        account:
+          $ref: '#/components/schemas/Account'
+
+    TransactionInput:
+      type: object
+      required:
+        - type
+        - amount
+        - category
+        - accountId
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        amount:
+          type: number
+          format: float
+        category:
+          type: string
+        note:
+          type: string
+        accountId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+
+    FD:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: float
+          example: 100000.00
+        rate:
+          type: number
+          format: float
+          example: 7.5
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        accountId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        account:
+          $ref: '#/components/schemas/Account'
+
+    FDInput:
+      type: object
+      required:
+        - amount
+        - rate
+        - startDate
+        - endDate
+        - accountId
+      properties:
+        amount:
+          type: number
+          format: float
+        rate:
+          type: number
+          format: float
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        accountId:
+          type: string
+          format: uuid
+
+    Gold:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        grams:
+          type: number
+          format: float
+          example: 10.5
+        value:
+          type: number
+          format: float
+          example: 55000.00
+        date:
+          type: string
+          format: date-time
+        userId:
+          type: string
+
+    GoldInput:
+      type: object
+      required:
+        - grams
+        - value
+      properties:
+        grams:
+          type: number
+          format: float
+        value:
+          type: number
+          format: float
+        date:
+          type: string
+          format: date-time
+
+    MutualFund:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schemeCode:
+          type: integer
+          example: 119551
+        schemeName:
+          type: string
+          example: "Axis Bluechip Fund - Direct Plan - Growth"
+        fundHouse:
+          type: string
+          example: "Axis Mutual Fund"
+        schemeType:
+          type: string
+          example: "Open Ended"
+        schemeCategory:
+          type: string
+          example: "Equity - Large Cap"
+        units:
+          type: number
+          format: float
+          example: 150.75
+        avgPrice:
+          type: number
+          format: float
+          example: 65.25
+        totalInvested:
+          type: number
+          format: float
+          example: 10000.00
+        purchaseDate:
+          type: string
+          format: date-time
+        currentNAV:
+          type: number
+          format: float
+          example: 68.50
+        lastUpdated:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+          default: true
+        notes:
+          type: string
+        investmentType:
+          type: string
+          enum: [lumpsum, sip]
+          default: lumpsum
+        tags:
+          type: string
+          description: JSON array of tags
+          example: '["equity", "large-cap"]'
+        sipAmount:
+          type: number
+          format: float
+        sipDate:
+          type: integer
+          minimum: 1
+          maximum: 31
+        sipStartDate:
+          type: string
+          format: date-time
+        sipEndDate:
+          type: string
+          format: date-time
+        sipFrequency:
+          type: string
+          enum: [monthly, quarterly]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+
+    MutualFundInput:
+      type: object
+      required:
+        - schemeCode
+        - schemeName
+        - fundHouse
+        - schemeType
+        - schemeCategory
+        - units
+        - avgPrice
+        - totalInvested
+      properties:
+        schemeCode:
+          type: integer
+        schemeName:
+          type: string
+        fundHouse:
+          type: string
+        schemeType:
+          type: string
+        schemeCategory:
+          type: string
+        units:
+          type: number
+          format: float
+        avgPrice:
+          type: number
+          format: float
+        totalInvested:
+          type: number
+          format: float
+        purchaseDate:
+          type: string
+          format: date-time
+        currentNAV:
+          type: number
+          format: float
+        notes:
+          type: string
+        investmentType:
+          type: string
+          enum: [lumpsum, sip]
+        tags:
+          type: string
+        sipAmount:
+          type: number
+          format: float
+        sipDate:
+          type: integer
+        sipStartDate:
+          type: string
+          format: date-time
+        sipEndDate:
+          type: string
+          format: date-time
+        sipFrequency:
+          type: string
+          enum: [monthly, quarterly]
+
+    MutualFundScheme:
+      type: object
+      properties:
+        schemeCode:
+          type: integer
+        schemeName:
+          type: string
+        fundHouse:
+          type: string
+        schemeType:
+          type: string
+        schemeCategory:
+          type: string
+        currentNAV:
+          type: number
+          format: float
+        lastUpdated:
+          type: string
+          format: date-time
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Emergency Fund"
+        targetAmount:
+          type: number
+          format: float
+          example: 500000.00
+        targetDate:
+          type: string
+          format: date-time
+        category:
+          type: string
+          enum: [emergency, investment, savings, purchase, other]
+        description:
+          type: string
+          example: "Build emergency fund for 6 months expenses"
+        isCompleted:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+        fundAdditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundAddition'
+
+    GoalInput:
+      type: object
+      required:
+        - title
+        - targetAmount
+        - category
+      properties:
+        title:
+          type: string
+        targetAmount:
+          type: number
+          format: float
+        targetDate:
+          type: string
+          format: date-time
+        category:
+          type: string
+          enum: [emergency, investment, savings, purchase, other]
+        description:
+          type: string
+
+    FundAddition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: float
+          example: 5000.00
+        note:
+          type: string
+          example: "Monthly contribution"
+        date:
+          type: string
+          format: date-time
+        goalId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Budget:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        category:
+          type: string
+          example: "Groceries"
+        limit:
+          type: number
+          format: float
+          example: 15000.00
+        period:
+          type: string
+          enum: [monthly, weekly, yearly]
+          default: monthly
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        userId:
+          type: string
+
+    BudgetInput:
+      type: object
+      required:
+        - category
+        - limit
+      properties:
+        category:
+          type: string
+        limit:
+          type: number
+          format: float
+        period:
+          type: string
+          enum: [monthly, weekly, yearly]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+
+    AccountInput:
+      type: object
+      required:
+        - name
+        - balance
+      properties:
+        name:
+          type: string
+        balance:
+          type: number
+          format: float
+
+    FinancialReport:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "overview"
+        period:
+          type: object
+          properties:
+            startDate:
+              type: string
+              format: date-time
+            endDate:
+              type: string
+              format: date-time
+        summary:
+          type: object
+          properties:
+            totalIncome:
+              type: number
+              format: float
+            totalExpenses:
+              type: number
+              format: float
+            netSavings:
+              type: number
+              format: float
+            totalAssets:
+              type: number
+              format: float
+        breakdown:
+          type: object
+          properties:
+            accountBalances:
+              type: array
+              items:
+                type: object
+                properties:
+                  accountName:
+                    type: string
+                  balance:
+                    type: number
+                    format: float
+            categoryWiseExpenses:
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  amount:
+                    type: number
+                    format: float
+            investments:
+              type: object
+              properties:
+                fds:
+                  type: number
+                  format: float
+                gold:
+                  type: number
+                  format: float
+                mutualFunds:
+                  type: number
+                  format: float
+        generatedAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        details:
+          type: string
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid input data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid input data"
+            details: "Name and balance are required"
+            timestamp: "2025-08-07T10:30:00Z"
+
+    Unauthorized:
+      description: Unauthorized - Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized"
+            details: "Valid authentication token required"
+            timestamp: "2025-08-07T10:30:00Z"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Resource not found"
+            details: "The requested resource could not be found"
+            timestamp: "2025-08-07T10:30:00Z"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
+            details: "An unexpected error occurred"
+            timestamp: "2025-08-07T10:30:00Z"
+
+tags:
+  - name: Users
+    description: User management operations
+  - name: Accounts
+    description: Financial account management
+  - name: Transactions
+    description: Income and expense transaction management
+  - name: Fixed Deposits
+    description: Fixed deposit investment management
+  - name: Gold Investments
+    description: Gold investment tracking
+  - name: Mutual Funds
+    description: Mutual fund investment management
+  - name: Goals
+    description: Financial goal setting and tracking
+  - name: Budgets
+    description: Spending budget management
+  - name: Market Data
+    description: Real-time market rates and data
+  - name: Portfolio
+    description: Portfolio import/export operations
+  - name: Reports
+    description: Financial reporting and analytics
+  - name: Development
+    description: Development and testing endpoints
