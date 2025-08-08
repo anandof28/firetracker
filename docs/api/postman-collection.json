@@ -1,0 +1,897 @@
+{
+  "info": {
+    "name": "Fire Tracker API",
+    "description": "Comprehensive financial portfolio management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{clerkToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://fire-tracker.vercel.app/api",
+      "type": "string"
+    },
+    {
+      "key": "localUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "clerkToken",
+      "value": "YOUR_CLERK_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication & Users",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Get All Accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"HDFC Savings Account\",\n  \"balance\": 50000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Account by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Account Name\",\n  \"balance\": 75000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{accountId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            }
+          }
+        },
+        {
+          "name": "Get Transactions with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions?type=expense&category=Groceries&startDate=2025-01-01&endDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "expense"
+                },
+                {
+                  "key": "category",
+                  "value": "Groceries"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"expense\",\n  \"amount\": 1500.00,\n  \"category\": \"Groceries\",\n  \"note\": \"Weekly grocery shopping\",\n  \"accountId\": \"{{accountId}}\",\n  \"date\": \"2025-08-07T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"expense\",\n  \"amount\": 2000.00,\n  \"category\": \"Groceries\",\n  \"note\": \"Updated grocery shopping\",\n  \"accountId\": \"{{accountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fixed Deposits",
+      "item": [
+        {
+          "name": "Get All FDs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fds",
+              "host": ["{{baseUrl}}"],
+              "path": ["fds"]
+            }
+          }
+        },
+        {
+          "name": "Create FD",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000.00,\n  \"rate\": 7.5,\n  \"startDate\": \"2025-01-01T00:00:00Z\",\n  \"endDate\": \"2026-01-01T00:00:00Z\",\n  \"accountId\": \"{{accountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/fds",
+              "host": ["{{baseUrl}}"],
+              "path": ["fds"]
+            }
+          }
+        },
+        {
+          "name": "Get FD by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fds/{{fdId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["fds", "{{fdId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update FD",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 150000.00,\n  \"rate\": 8.0,\n  \"startDate\": \"2025-01-01T00:00:00Z\",\n  \"endDate\": \"2026-01-01T00:00:00Z\",\n  \"accountId\": \"{{accountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/fds/{{fdId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["fds", "{{fdId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete FD",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fds/{{fdId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["fds", "{{fdId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gold Investments",
+      "item": [
+        {
+          "name": "Get All Gold Investments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/gold",
+              "host": ["{{baseUrl}}"],
+              "path": ["gold"]
+            }
+          }
+        },
+        {
+          "name": "Add Gold Investment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grams\": 10.5,\n  \"value\": 55000.00,\n  \"date\": \"2025-08-07T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gold",
+              "host": ["{{baseUrl}}"],
+              "path": ["gold"]
+            }
+          }
+        },
+        {
+          "name": "Get Gold Investment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/gold/{{goldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["gold", "{{goldId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Gold Investment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grams\": 15.0,\n  \"value\": 78000.00,\n  \"date\": \"2025-08-07T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/gold/{{goldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["gold", "{{goldId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Gold Investment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/gold/{{goldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["gold", "{{goldId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mutual Funds",
+      "item": [
+        {
+          "name": "Get All Mutual Fund Investments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds"]
+            }
+          }
+        },
+        {
+          "name": "Search Mutual Fund Schemes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds/search?query=axis&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "axis"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Mutual Fund Investment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schemeCode\": 119551,\n  \"schemeName\": \"Axis Bluechip Fund - Direct Plan - Growth\",\n  \"fundHouse\": \"Axis Mutual Fund\",\n  \"schemeType\": \"Open Ended\",\n  \"schemeCategory\": \"Equity - Large Cap\",\n  \"units\": 150.75,\n  \"avgPrice\": 65.25,\n  \"totalInvested\": 10000.00,\n  \"investmentType\": \"lumpsum\",\n  \"notes\": \"First investment in large cap fund\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds"]
+            }
+          }
+        },
+        {
+          "name": "Add SIP Investment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schemeCode\": 119551,\n  \"schemeName\": \"Axis Bluechip Fund - Direct Plan - Growth\",\n  \"fundHouse\": \"Axis Mutual Fund\",\n  \"schemeType\": \"Open Ended\",\n  \"schemeCategory\": \"Equity - Large Cap\",\n  \"units\": 75.5,\n  \"avgPrice\": 66.25,\n  \"totalInvested\": 5000.00,\n  \"investmentType\": \"sip\",\n  \"sipAmount\": 5000.00,\n  \"sipDate\": 15,\n  \"sipStartDate\": \"2025-01-15T00:00:00Z\",\n  \"sipFrequency\": \"monthly\",\n  \"notes\": \"Monthly SIP investment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds"]
+            }
+          }
+        },
+        {
+          "name": "Get Mutual Fund Investment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds/{{mutualFundId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds", "{{mutualFundId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Mutual Fund Investment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"units\": 200.0,\n  \"avgPrice\": 67.0,\n  \"totalInvested\": 13400.00,\n  \"currentNAV\": 68.50,\n  \"notes\": \"Updated investment details\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds/{{mutualFundId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds", "{{mutualFundId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Mutual Fund Investment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/mutual-funds/{{mutualFundId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["mutual-funds", "{{mutualFundId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Goals",
+      "item": [
+        {
+          "name": "Get All Goals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals"]
+            }
+          }
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Emergency Fund\",\n  \"targetAmount\": 500000.00,\n  \"targetDate\": \"2026-08-07T00:00:00Z\",\n  \"category\": \"emergency\",\n  \"description\": \"Build emergency fund for 6 months expenses\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/goals",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals"]
+            }
+          }
+        },
+        {
+          "name": "Get Goal by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/goals/{{goalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals", "{{goalId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Goal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Emergency Fund\",\n  \"targetAmount\": 600000.00,\n  \"targetDate\": \"2027-01-01T00:00:00Z\",\n  \"category\": \"emergency\",\n  \"description\": \"Updated emergency fund target\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/goals/{{goalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals", "{{goalId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Goal",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/goals/{{goalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["goals", "{{goalId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "Get All Budgets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/budgets",
+              "host": ["{{baseUrl}}"],
+              "path": ["budgets"]
+            }
+          }
+        },
+        {
+          "name": "Create Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"Groceries\",\n  \"limit\": 15000.00,\n  \"period\": \"monthly\",\n  \"startDate\": \"2025-08-01T00:00:00Z\",\n  \"endDate\": \"2025-12-31T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/budgets",
+              "host": ["{{baseUrl}}"],
+              "path": ["budgets"]
+            }
+          }
+        },
+        {
+          "name": "Get Budget by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/budgets/{{budgetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["budgets", "{{budgetId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"Groceries\",\n  \"limit\": 18000.00,\n  \"period\": \"monthly\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/budgets/{{budgetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["budgets", "{{budgetId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Budget",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/budgets/{{budgetId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["budgets", "{{budgetId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Market Data",
+      "item": [
+        {
+          "name": "Get Gold and Silver Rates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/gold-rate",
+              "host": ["{{baseUrl}}"],
+              "path": ["gold-rate"]
+            }
+          },
+          "auth": {
+            "type": "noauth"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Portfolio Management",
+      "item": [
+        {
+          "name": "Import Portfolio (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"accounts\": [\n      {\n        \"name\": \"Imported Savings Account\",\n        \"balance\": 25000.00\n      }\n    ],\n    \"transactions\": [\n      {\n        \"type\": \"income\",\n        \"amount\": 50000.00,\n        \"category\": \"Salary\",\n        \"note\": \"Monthly salary\",\n        \"accountId\": \"account-id-here\"\n      }\n    ],\n    \"fds\": [\n      {\n        \"amount\": 50000.00,\n        \"rate\": 7.25,\n        \"startDate\": \"2025-01-01T00:00:00Z\",\n        \"endDate\": \"2026-01-01T00:00:00Z\",\n        \"accountId\": \"account-id-here\"\n      }\n    ],\n    \"gold\": [\n      {\n        \"grams\": 5.0,\n        \"value\": 28000.00\n      }\n    ],\n    \"goals\": [\n      {\n        \"title\": \"Car Purchase\",\n        \"targetAmount\": 800000.00,\n        \"category\": \"purchase\",\n        \"description\": \"Save for new car\"\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/import-portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["import-portfolio"]
+            }
+          }
+        },
+        {
+          "name": "Import Portfolio (File Upload)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/portfolio.csv"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/import-portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["import-portfolio"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get Overview Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports?type=overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "overview"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Detailed Report with Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports?type=detailed&startDate=2025-01-01&endDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "detailed"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Category-wise Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports?type=category-wise&startDate=2025-01-01&endDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "category-wise"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Monthly Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports?type=monthly&startDate=2025-08-01&endDate=2025-08-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "monthly"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-08-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-08-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "item": [
+        {
+          "name": "Test Database Connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/test-db",
+              "host": ["{{baseUrl}}"],
+              "path": ["test-db"]
+            }
+          },
+          "auth": {
+            "type": "noauth"
+          }
+        }
+      ]
+    }
+  ]
+}
