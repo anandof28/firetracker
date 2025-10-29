@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 
 interface FeatureRequest {
@@ -10,16 +10,25 @@ interface FeatureRequest {
   category: string
   priority: string
   votes: number
-  status: 'submitted' | 'reviewing' | 'planned' | 'in-progress' | 'completed' | 'declined'
-  submittedBy: string
+  status: 'submitted' | 'reviewing' | 'approved' | 'planned' | 'in-progress' | 'completed' | 'declined'
+  submittedBy?: string
   submittedAt: string
   estimatedTimeline?: string
+  adminNotes?: string
+  user?: {
+    name: string
+    email: string
+  }
+  createdAt: string
+  updatedAt: string
 }
 
 export default function FeatureRequests() {
   const [activeTab, setActiveTab] = useState<'browse' | 'submit'>('browse')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('votes')
+  const [features, setFeatures] = useState<FeatureRequest[]>([])
+  const [loading, setLoading] = useState(true)
   
   const [newRequest, setNewRequest] = useState({
     title: '',
@@ -31,78 +40,29 @@ export default function FeatureRequests() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Mock data - in real app this would come from API
-  const [features, setFeatures] = useState<FeatureRequest[]>([
-    {
-      id: '1',
-      title: 'Expense Categories Auto-Suggestions',
-      description: 'Automatically suggest expense categories based on transaction descriptions using ML',
-      category: 'enhancement',
-      priority: 'high',
-      votes: 47,
-      status: 'planned',
-      submittedBy: 'Rajesh K.',
-      submittedAt: '2024-01-15',
-      estimatedTimeline: 'Q2 2024'
-    },
-    {
-      id: '2',
-      title: 'Dark Mode Support',
-      description: 'Add dark mode theme for better viewing experience in low light conditions',
-      category: 'ui-ux',
-      priority: 'medium',
-      votes: 32,
-      status: 'in-progress',
-      submittedBy: 'Priya S.',
-      submittedAt: '2024-01-10',
-      estimatedTimeline: 'Q1 2024'
-    },
-    {
-      id: '3',
-      title: 'Mobile App for iOS and Android',
-      description: 'Native mobile applications for better mobile experience and offline access',
-      category: 'new-feature',
-      priority: 'high',
-      votes: 89,
-      status: 'reviewing',
-      submittedBy: 'Amit P.',
-      submittedAt: '2024-01-20'
-    },
-    {
-      id: '4',
-      title: 'Integration with Indian Banks APIs',
-      description: 'Direct integration with major Indian banks for automatic transaction import',
-      category: 'integration',
-      priority: 'high',
-      votes: 156,
-      status: 'planned',
-      submittedBy: 'Kavitha M.',
-      submittedAt: '2024-01-05',
-      estimatedTimeline: 'Q3 2024'
-    },
-    {
-      id: '5',
-      title: 'Investment Comparison Tool',
-      description: 'Compare different investment options side by side with projections',
-      category: 'new-feature',
-      priority: 'medium',
-      votes: 23,
-      status: 'submitted',
-      submittedBy: 'Suresh D.',
-      submittedAt: '2024-01-25'
-    },
-    {
-      id: '6',
-      title: 'Bulk Transaction Import from Excel',
-      description: 'Enhanced CSV/Excel import with better mapping and validation',
-      category: 'enhancement',
-      priority: 'medium',
-      votes: 41,
-      status: 'completed',
-      submittedBy: 'Neha T.',
-      submittedAt: '2023-12-15'
+  // Fetch feature requests from API
+  useEffect(() => {
+    fetchFeatureRequests()
+  }, [])
+
+  const fetchFeatureRequests = async () => {
+    try {
+      const response = await fetch('/api/feature-requests')
+      if (response.ok) {
+        const data = await response.json()
+        setFeatures(data.featureRequests)
+      } else {
+        toast.error('Failed to load feature requests')
+      }
+    } catch (error) {
+      console.error('Error fetching feature requests:', error)
+      toast.error('Failed to load feature requests')
+    } finally {
+      setLoading(false)
     }
-  ])
+  }
+
+
 
   const categories = [
     { value: 'all', label: 'All Categories', count: features.length },
@@ -116,7 +76,8 @@ export default function FeatureRequests() {
   const statusColors = {
     'submitted': 'bg-gray-100 text-gray-800',
     'reviewing': 'bg-yellow-100 text-yellow-800',
-    'planned': 'bg-blue-100 text-blue-800',
+    'approved': 'bg-blue-100 text-blue-800',
+    'planned': 'bg-indigo-100 text-indigo-800',
     'in-progress': 'bg-purple-100 text-purple-800',
     'completed': 'bg-green-100 text-green-800',
     'declined': 'bg-red-100 text-red-800'
@@ -132,7 +93,7 @@ export default function FeatureRequests() {
     .filter(feature => selectedCategory === 'all' || feature.category === selectedCategory)
     .sort((a, b) => {
       if (sortBy === 'votes') return b.votes - a.votes
-      if (sortBy === 'recent') return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+      if (sortBy === 'recent') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       if (sortBy === 'priority') {
         const priorityOrder = { high: 3, medium: 2, low: 1 }
         return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder]
@@ -140,13 +101,21 @@ export default function FeatureRequests() {
       return 0
     })
 
-  const handleVote = (featureId: string) => {
-    setFeatures(prev => prev.map(feature => 
-      feature.id === featureId 
-        ? { ...feature, votes: feature.votes + 1 }
-        : feature
-    ))
-    toast.success('Vote recorded! Thank you for your feedback.')
+  const handleVote = async (featureId: string) => {
+    try {
+      // For now, just show a message - voting endpoint can be implemented later
+      toast.success('Thank you for your interest! Feature voting will be available soon.')
+    } catch (error) {
+      toast.error('Failed to vote. Please try again.')
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,36 +123,42 @@ export default function FeatureRequests() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      const newFeature: FeatureRequest = {
-        id: Date.now().toString(),
-        title: newRequest.title,
-        description: newRequest.description,
-        category: newRequest.category,
-        priority: newRequest.priority,
-        votes: 1,
-        status: 'submitted',
-        submittedBy: 'You',
-        submittedAt: new Date().toISOString().split('T')[0]
-      }
-      
-      setFeatures(prev => [newFeature, ...prev])
-      toast.success('Feature request submitted successfully!')
-      
-      // Reset form
-      setNewRequest({
-        title: '',
-        description: '',
-        category: 'enhancement',
-        priority: 'medium',
-        useCases: '',
-        alternatives: ''
+      const response = await fetch('/api/feature-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: newRequest.title,
+          description: newRequest.description,
+          category: newRequest.category,
+          priority: newRequest.priority,
+        }),
       })
-      
-      setActiveTab('browse')
+
+      if (response.ok) {
+        const data = await response.json()
+        toast.success('Feature request submitted successfully! We\'ll review it and get back to you.')
+        
+        // Reset form
+        setNewRequest({
+          title: '',
+          description: '',
+          category: 'enhancement',
+          priority: 'medium',
+          useCases: '',
+          alternatives: ''
+        })
+        
+        setActiveTab('browse')
+        // Refresh the list to show new request if it's approved
+        fetchFeatureRequests()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to submit feature request')
+      }
     } catch (error) {
+      console.error('Error submitting feature request:', error)
       toast.error('Failed to submit feature request. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -235,79 +210,107 @@ export default function FeatureRequests() {
 
           {activeTab === 'browse' ? (
             <div className="p-6">
-              {/* Filters */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 space-y-4 md:space-y-0">
-                <div className="flex flex-wrap gap-2">
-                  {categories.map(category => (
-                    <button
-                      key={category.value}
-                      onClick={() => setSelectedCategory(category.value)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        selectedCategory === category.value
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {category.label} ({category.count})
-                    </button>
-                  ))}
+              {/* Loading State */}
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <p className="mt-4 text-gray-600">Loading feature requests...</p>
                 </div>
-                
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="votes">Sort by Votes</option>
-                  <option value="recent">Sort by Recent</option>
-                  <option value="priority">Sort by Priority</option>
-                </select>
-              </div>
-
-              {/* Feature List */}
-              <div className="space-y-4">
-                {filteredFeatures.map((feature) => (
-                  <div key={feature.id} className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-blue-300 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[feature.status]}`}>
-                            {feature.status.replace('-', ' ')}
-                          </span>
-                          <span className={`text-sm font-medium ${priorityColors[feature.priority as keyof typeof priorityColors]}`}>
-                            {feature.priority} priority
-                          </span>
-                        </div>
-                        <p className="text-gray-700 mb-3">{feature.description}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>By {feature.submittedBy}</span>
-                          <span>•</span>
-                          <span>{new Date(feature.submittedAt).toLocaleDateString()}</span>
-                          {feature.estimatedTimeline && (
-                            <>
-                              <span>•</span>
-                              <span className="text-blue-600 font-medium">ETA: {feature.estimatedTimeline}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3 ml-6">
+              ) : (
+                <>
+                  {/* Filters */}
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 space-y-4 md:space-y-0">
+                    <div className="flex flex-wrap gap-2">
+                      {categories.map(category => (
                         <button
-                          onClick={() => handleVote(feature.id)}
-                          className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                          key={category.value}
+                          onClick={() => setSelectedCategory(category.value)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            selectedCategory === category.value
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
                         >
-                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                          </svg>
-                          <span className="font-medium">{feature.votes}</span>
+                          {category.label} ({category.count})
                         </button>
-                      </div>
+                      ))}
                     </div>
+                    
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="votes">Sort by Votes</option>
+                      <option value="recent">Sort by Recent</option>
+                      <option value="priority">Sort by Priority</option>
+                    </select>
                   </div>
-                ))}
-              </div>
+
+                  {/* Feature List */}
+                  {filteredFeatures.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-gray-400 mb-4">
+                        <svg className="mx-auto h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No feature requests yet</h3>
+                      <p className="text-gray-600 mb-4">Be the first to suggest a new feature!</p>
+                      <button
+                        onClick={() => setActiveTab('submit')}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Submit First Request
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredFeatures.map((feature) => (
+                        <div key={feature.id} className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-blue-300 transition-colors">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[feature.status]}`}>
+                                  {feature.status.replace('-', ' ')}
+                                </span>
+                                <span className={`text-sm font-medium ${priorityColors[feature.priority as keyof typeof priorityColors]}`}>
+                                  {feature.priority} priority
+                                </span>
+                              </div>
+                              <p className="text-gray-700 mb-3">{feature.description}</p>
+                              <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                <span>By {feature.user?.name || 'Anonymous'}</span>
+                                <span>•</span>
+                                <span>{formatDate(feature.createdAt)}</span>
+                                {feature.estimatedTimeline && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-blue-600 font-medium">ETA: {feature.estimatedTimeline}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-3 ml-6">
+                              <button
+                                onClick={() => handleVote(feature.id)}
+                                className="flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                              >
+                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                                <span className="font-medium">{feature.votes}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ) : (
             <div className="p-6">

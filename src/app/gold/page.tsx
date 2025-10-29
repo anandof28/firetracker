@@ -4,6 +4,7 @@ import DataGrid from '@/components/DataGrid'
 import DatePicker from '@/components/DatePicker'
 import { formatDateForDisplay, formatDateForInput, getToday } from '@/utils/dateHelpers'
 import { useEffect, useState } from 'react'
+import { AILoadingOrb, NeuralNetworkLoader } from '@/components/LoadingComponents'
 
 interface Gold {
   id: string
@@ -16,6 +17,7 @@ export default function GoldPage() {
   const [gold, setGold] = useState<Gold[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [formLoading, setFormLoading] = useState(false)
   const [currentGoldRate, setCurrentGoldRate] = useState('')
   const [goldForm, setGoldForm] = useState({ 
     grams: '', 
@@ -47,6 +49,7 @@ export default function GoldPage() {
 
   const createGold = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormLoading(true)
     try {
       const response = await fetch('/api/gold', {
         method: 'POST',
@@ -65,6 +68,8 @@ export default function GoldPage() {
       }
     } catch (err) {
       setError('Failed to create gold record')
+    } finally {
+      setFormLoading(false)
     }
   }
 
@@ -97,7 +102,19 @@ export default function GoldPage() {
     return value / grams
   }
 
-  if (loading) return <div className="p-6">Loading...</div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-yellow-50">
+        <div className="mb-8">
+          <NeuralNetworkLoader />
+        </div>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Loading Gold Investments</h2>
+          <p className="text-gray-500">Calculating precious metal portfolios...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6">
@@ -229,8 +246,12 @@ export default function GoldPage() {
               </div>
               <button 
                 type="submit" 
-                className="w-full bg-yellow-600 text-white p-3 rounded-md hover:bg-yellow-700 transition-colors font-medium"
+                disabled={formLoading}
+                className="w-full bg-gradient-to-r from-yellow-600 to-yellow-700 text-white p-3 rounded-md hover:from-yellow-700 hover:to-yellow-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none"
               >
+                {formLoading && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
                 Add Gold Purchase
               </button>
             </form>

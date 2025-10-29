@@ -77,7 +77,6 @@ export async function POST(req: NextRequest) {
 
     // Account Balances
     const accounts = await prisma.account.findMany({ where: { userId }, select: { balance: true } });
-    console.log('Accounts:', accounts);
     const accountTotal = accounts.reduce((sum, a) => sum + a.balance, 0);
 
     // Fixed Deposits

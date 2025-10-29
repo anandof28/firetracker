@@ -34,6 +34,36 @@ interface FD {
   }
 }
 
+interface Loan {
+  id: string
+  loanName: string
+  loanType: string
+  principalAmount: number
+  interestRate: number
+  tenureMonths: number
+  emiAmount: number
+  currentBalance: number
+  remainingEmis: number
+  isActive: boolean
+  startDate: string
+  endDate: string
+}
+
+interface EMIPayment {
+  id: string
+  loanId: string
+  emiNumber: number
+  dueDate: string
+  paidDate?: string
+  emiAmount: number
+  status: string
+  lateFee?: number
+  loan: {
+    loanName: string
+    loanType: string
+  }
+}
+
 interface Notification {
   id: string
   type: 'budget' | 'fd' | 'transaction' | 'system'
@@ -49,21 +79,24 @@ interface Notification {
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'unread' | 'budget' | 'fd' | 'system'>('all')
+  const [filter, setFilter] = useState<'all' | 'unread' | 'budget' | 'fd' | 'loans' | 'system'>('all')
 
   const fetchNotifications = async () => {
     try {
       setLoading(true)
       
-      // Fetch budget alerts and FD data (same logic as NotificationBell)
-      const [budgetsRes, transactionsRes, fdsRes] = await Promise.all([
+      // Fetch budget alerts, FD data, and loan data
+      const [budgetsRes, transactionsRes, fdsRes, loansRes, emisRes] = await Promise.all([
         fetch('/api/budgets'),
         fetch('/api/transactions'),
-        fetch('/api/fds')
+        fetch('/api/fds'),
+        fetch('/api/loans'),
+        fetch('/api/emis?upcoming=true&limit=10')
       ])
 
       let budgetNotifications: Notification[] = []
       let fdNotifications: Notification[] = []
+      let loanNotifications: Notification[] = []
 
       if (budgetsRes.ok && transactionsRes.ok) {
         const budgets: Budget[] = await budgetsRes.json()
@@ -129,7 +162,7 @@ export default function NotificationsPage() {
               timestamp: new Date(),
               isRead: status === 'good', // Mark 'good' statuses as read by default
               severity,
-              actionUrl: '/budgets',
+              actionUrl: `/budgets?category=${encodeURIComponent(budget.category)}`,
               icon
             })
           }
@@ -155,7 +188,7 @@ export default function NotificationsPage() {
             timestamp: new Date(),
             isRead: false,
             severity: 'high',
-            actionUrl: '/fds',
+            actionUrl: `/fds?highlight=${fd.id}`,
             icon: '🚨'
           })
         })
@@ -174,13 +207,139 @@ export default function NotificationsPage() {
             timestamp: new Date(),
             isRead: false,
             severity: urgency,
-            actionUrl: '/fds',
+            actionUrl: `/fds?highlight=${fd.id}`,
             icon
           })
         })
       }
 
-      const allNotifications = [...budgetNotifications, ...fdNotifications]
+      // Loan and EMI notifications
+      if (loansRes.ok && emisRes.ok) {
+        const loans: Loan[] = await loansRes.json()
+        const emis: EMIPayment[] = await emisRes.json()
+        const currentDate = new Date()
+
+        // Active loans
+        const activeLoans = loans.filter(loan => loan.isActive)
+
+        // 1. Overdue EMI notifications (highest priority)
+        const overdueEmis = emis.filter(emi => 
+          emi.status === 'pending' && 
+          new Date(emi.dueDate) < currentDate
+        )
+
+        overdueEmis.forEach(emi => {
+          const daysPastDue = Math.floor((currentDate.getTime() - new Date(emi.dueDate).getTime()) / (1000 * 60 * 60 * 24))
+          const lateFeeAmount = emi.lateFee || 0
+          
+          loanNotifications.push({
+            id: `emi-overdue-${emi.id}`,
+            type: 'system',
+            title: `Overdue EMI: ${emi.loan.loanName}`,
+            message: `EMI #${emi.emiNumber} of ₹${emi.emiAmount.toLocaleString()} is ${daysPastDue} days overdue. ${lateFeeAmount > 0 ? `Late fee: ₹${lateFeeAmount.toLocaleString()}.` : ''} Please pay immediately to avoid credit score impact.`,
+            timestamp: new Date(),
+            isRead: false,
+            severity: 'high',
+            actionUrl: `/emis?loan=${emi.loanId}&status=overdue`,
+            icon: '🚨'
+          })
+        })
+
+        // 2. EMIs due soon (next 7 days)
+        const upcomingEmis = emis.filter(emi => {
+          if (emi.status !== 'pending') return false
+          const dueDate = new Date(emi.dueDate)
+          const diffDays = Math.ceil((dueDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
+          return diffDays >= 0 && diffDays <= 7
+        })
+
+        upcomingEmis.forEach(emi => {
+          const dueDate = new Date(emi.dueDate)
+          const diffDays = Math.ceil((dueDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
+          const severity = diffDays <= 1 ? 'high' : diffDays <= 3 ? 'medium' : 'low'
+          const icon = diffDays <= 1 ? '⚠️' : diffDays <= 3 ? '⏰' : '📅'
+          
+          loanNotifications.push({
+            id: `emi-upcoming-${emi.id}`,
+            type: 'system',
+            title: `EMI Due ${diffDays === 0 ? 'Today' : diffDays === 1 ? 'Tomorrow' : `in ${diffDays} days`}: ${emi.loan.loanName}`,
+            message: `EMI #${emi.emiNumber} of ₹${emi.emiAmount.toLocaleString()} is due on ${dueDate.toLocaleDateString()}. Ensure sufficient balance in your account.`,
+            timestamp: new Date(),
+            isRead: false,
+            severity,
+            actionUrl: `/emis?loan=${emi.loanId}&status=upcoming`,
+            icon
+          })
+        })
+
+        // 3. Loan milestone notifications
+        activeLoans.forEach(loan => {
+          const progressPercentage = ((loan.principalAmount - loan.currentBalance) / loan.principalAmount) * 100
+          const remainingPercentage = 100 - progressPercentage
+
+          // 50% completion milestone
+          if (progressPercentage >= 50 && progressPercentage < 55) {
+            loanNotifications.push({
+              id: `loan-milestone-50-${loan.id}`,
+              type: 'system',
+              title: `Loan 50% Complete: ${loan.loanName}`,
+              message: `Congratulations! You've paid off 50% of your ${loan.loanType} loan. Remaining balance: ₹${loan.currentBalance.toLocaleString()}`,
+              timestamp: new Date(),
+              isRead: false,
+              severity: 'low',
+              actionUrl: `/loans?highlight=${loan.id}`,
+              icon: '🎉'
+            })
+          }
+
+          // 75% completion milestone
+          if (progressPercentage >= 75 && progressPercentage < 80) {
+            loanNotifications.push({
+              id: `loan-milestone-75-${loan.id}`,
+              type: 'system',
+              title: `Loan 75% Complete: ${loan.loanName}`,
+              message: `Great progress! You've paid off 75% of your ${loan.loanType} loan. Only ₹${loan.currentBalance.toLocaleString()} remaining!`,
+              timestamp: new Date(),
+              isRead: false,
+              severity: 'low',
+              actionUrl: `/loans?highlight=${loan.id}`,
+              icon: '🎊'
+            })
+          }
+
+          // High interest rate warning
+          if (loan.interestRate > 15) {
+            loanNotifications.push({
+              id: `loan-high-rate-${loan.id}`,
+              type: 'system',
+              title: `High Interest Rate Alert: ${loan.loanName}`,
+              message: `Your ${loan.loanType} loan has a ${loan.interestRate}% interest rate. Consider refinancing options to reduce interest burden.`,
+              timestamp: new Date(),
+              isRead: true, // Mark as read to avoid spam
+              severity: 'medium',
+              actionUrl: `/loans?highlight=${loan.id}&type=${loan.loanType}`,
+              icon: '📈'
+            })
+          }
+
+          // Loan nearing completion (< 6 months remaining)
+          if (loan.remainingEmis <= 6 && loan.remainingEmis > 0) {
+            loanNotifications.push({
+              id: `loan-nearing-end-${loan.id}`,
+              type: 'system',
+              title: `Loan Almost Complete: ${loan.loanName}`,
+              message: `Only ${loan.remainingEmis} EMIs remaining for your ${loan.loanType} loan! You'll be debt-free soon. Remaining amount: ₹${loan.currentBalance.toLocaleString()}`,
+              timestamp: new Date(),
+              isRead: false,
+              severity: 'low',
+              actionUrl: `/loans?highlight=${loan.id}`,
+              icon: '🎯'
+            })
+          }
+        })
+      }
+
+      const allNotifications = [...budgetNotifications, ...fdNotifications, ...loanNotifications]
 
       // Sort by severity and timestamp
       allNotifications.sort((a, b) => {
@@ -208,6 +367,7 @@ export default function NotificationsPage() {
     if (filter === 'unread') return !notification.isRead
     if (filter === 'budget') return notification.type === 'budget'
     if (filter === 'fd') return notification.type === 'fd'
+    if (filter === 'loans') return notification.type === 'system' && (notification.title.includes('EMI') || notification.title.includes('Loan'))
     if (filter === 'system') return notification.type === 'system'
     return true
   })
@@ -238,6 +398,17 @@ export default function NotificationsPage() {
     }
   }
 
+  const getActionButtonText = (notification: Notification) => {
+    if (notification.type === 'budget') return 'View Budget →'
+    if (notification.type === 'fd') return 'Manage FDs →'
+    if (notification.type === 'system') {
+      if (notification.title.includes('Overdue EMI') || notification.title.includes('EMI Due')) return 'Pay EMI →'
+      if (notification.title.includes('EMI')) return 'View EMIs →'
+      if (notification.title.includes('Loan')) return 'View Loan →'
+    }
+    return 'View Details →'
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
@@ -246,11 +417,35 @@ export default function NotificationsPage() {
         <p className="text-gray-600 mt-2">Stay updated with your financial alerts and budget status</p>
       </div>
 
+      {/* Notification Summary Stats */}
+      {!loading && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-sm font-medium text-gray-600">Total Notifications</h3>
+            <p className="text-2xl font-bold text-gray-900">{notifications.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-sm font-medium text-gray-600">Unread</h3>
+            <p className="text-2xl font-bold text-red-600">{notifications.filter(n => !n.isRead).length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-sm font-medium text-gray-600">High Priority</h3>
+            <p className="text-2xl font-bold text-orange-600">{notifications.filter(n => n.severity === 'high').length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-sm font-medium text-gray-600">Loan Alerts</h3>
+            <p className="text-2xl font-bold text-purple-600">
+              {notifications.filter(n => n.type === 'system' && (n.title.includes('EMI') || n.title.includes('Loan'))).length}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Filters and Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-wrap gap-2">
-            {(['all', 'unread', 'budget', 'fd', 'system'] as const).map((filterOption) => (
+            {(['all', 'unread', 'budget', 'fd', 'loans', 'system'] as const).map((filterOption) => (
               <button
                 key={filterOption}
                 onClick={() => setFilter(filterOption)}
@@ -264,6 +459,7 @@ export default function NotificationsPage() {
                 {filterOption === 'unread' && 'Unread'}
                 {filterOption === 'budget' && 'Budget Alerts'}
                 {filterOption === 'fd' && 'FD Alerts'}
+                {filterOption === 'loans' && 'Loan Alerts'}
                 {filterOption === 'system' && 'System'}
               </button>
             ))}
@@ -338,9 +534,9 @@ export default function NotificationsPage() {
                       {notification.actionUrl && (
                         <Link
                           href={notification.actionUrl}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors hover:underline"
                         >
-                          View details →
+                          {getActionButtonText(notification)}
                         </Link>
                       )}
                     </div>

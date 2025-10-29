@@ -54,13 +54,26 @@ In your Vercel project settings, add these environment variables:
 
 #### Required Variables:
 ```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
+CLERK_SECRET_KEY=sk_live_xxxxx
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-DATABASE_URL=file:./dev.db
+
+# Database (PostgreSQL for production)
+DATABASE_URL=postgresql://username:password@host:port/database
+
+# Email Service (Resend)
+RESEND_API_KEY=re_xxxxxxxxxx
+CONTACT_EMAIL=your-email@example.com
+
+# Feature Request Admin
+ADMIN_EMAIL=your-admin-email@gmail.com
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 NODE_ENV=production
 ```
 
@@ -151,12 +164,24 @@ vercel --prod
 
 ## ✅ Post-Deployment Checklist
 
+### Core Features:
 - [ ] Authentication working (sign in/up)
 - [ ] Database connections established
-- [ ] API routes responding correctly
-- [ ] Mutual funds search working
-- [ ] All pages loading without errors
+- [ ] Dashboard loading with financial data
+- [ ] All API routes responding correctly
 - [ ] Mobile responsiveness verified
+
+### New Feature Request System:
+- [ ] Feature requests page accessible at `/support/feature-requests`
+- [ ] Users can submit feature requests (requires authentication)
+- [ ] Admin receives email notifications for new requests
+- [ ] Admin panel accessible at `/admin/feature-requests` (admin email only)
+- [ ] Admin can approve/decline and manage feature requests
+
+### Communication Features:
+- [ ] Contact form sending emails (`/support/contact`)
+- [ ] Feedback form working (`/support/feedback`)
+- [ ] Email notifications configured and working
 
 ## 🐛 Common Issues & Solutions
 

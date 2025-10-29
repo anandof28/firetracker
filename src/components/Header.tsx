@@ -9,25 +9,15 @@ import NotificationBell from './NotificationBell'
 export default function Header() {
   const pathname = usePathname()
   const { isSignedIn } = useUser()
-  const [isInvestmentDropdownOpen, setIsInvestmentDropdownOpen] = useState(false)
-  const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false)
-  const [isSupportDropdownOpen, setIsSupportDropdownOpen] = useState(false)
+  const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const investmentDropdownRef = useRef<HTMLDivElement>(null)
-  const toolsDropdownRef = useRef<HTMLDivElement>(null)
-  const supportDropdownRef = useRef<HTMLDivElement>(null)
+  const moreDropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (investmentDropdownRef.current && !investmentDropdownRef.current.contains(event.target as Node)) {
-        setIsInvestmentDropdownOpen(false)
-      }
-      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target as Node)) {
-        setIsToolsDropdownOpen(false)
-      }
-      if (supportDropdownRef.current && !supportDropdownRef.current.contains(event.target as Node)) {
-        setIsSupportDropdownOpen(false)
+      if (moreDropdownRef.current && !moreDropdownRef.current.contains(event.target as Node)) {
+        setIsMoreDropdownOpen(false)
       }
     }
 
@@ -96,6 +86,20 @@ export default function Header() {
       mobileIcon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      )
+    },
+    { 
+      name: 'Loans & EMI', 
+      href: '/loans', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      ),
+      mobileIcon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       )
     },
@@ -191,6 +195,20 @@ export default function Header() {
 
     },
     { 
+      name: 'Calendar', 
+      href: '/calendar', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      mobileIcon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      )
+    },
+    { 
       name: 'Import Data', 
       href: '/import-portfolio', 
       icon: (
@@ -265,8 +283,6 @@ export default function Header() {
     },
   ]
 
-  const allNavigation = [...mainNavigation, ...investmentItems, ...toolsItems, ...supportItems]
-
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -287,76 +303,47 @@ export default function Header() {
           {/* Navigation - Only show when signed in */}
           <SignedIn>
             <nav className="hidden lg:flex items-center space-x-1">
-              {/* Main Navigation Items */}
-              {mainNavigation.map((item) => {
+              {/* Core Navigation Items (most used) */}
+              {mainNavigation.slice(0, 4).map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
+                    className={`px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
                       isActive
                         ? 'bg-blue-100 text-blue-700 border border-blue-200'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
                     {item.icon}
-                    <span>{item.name}</span>
+                    <span className="hidden xl:inline">{item.name}</span>
                   </Link>
                 )
               })}
 
-              {/* Investments Dropdown */}
-              <div className="relative" ref={investmentDropdownRef}>
+              {/* Loans & EMI - Direct Link */}
+              <Link
+                href="/loans"
+                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
+                  pathname === '/loans' || pathname === '/emis'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="hidden xl:inline">Loans</span>
+              </Link>
+
+              {/* All Other Items in One Dropdown */}
+              <div className="relative" ref={moreDropdownRef}>
                 <button
                   type="button"
-                  onClick={() => setIsInvestmentDropdownOpen(!isInvestmentDropdownOpen)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
-                    investmentItems.some(item => pathname === item.href)
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v6l-3-3-3 3V6" />
-                  </svg>
-                  <span>Investments</span>
-                  <svg className={`w-4 h-4 transition-transform ${isInvestmentDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {isInvestmentDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                    {investmentItems.map((item) => {
-                      const isActive = pathname === item.href
-                      return (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          onClick={() => setIsInvestmentDropdownOpen(false)}
-                          className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          {item.icon}
-                          <span>{item.name}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Tools Dropdown */}
-              <div className="relative" ref={toolsDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsToolsDropdownOpen(!isToolsDropdownOpen)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
-                    toolsItems.some(item => pathname === item.href)
+                  onClick={() => setIsMoreDropdownOpen(!isMoreDropdownOpen)}
+                  className={`px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
+                    [...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)
                       ? 'bg-blue-100 text-blue-700 border border-blue-200'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
@@ -364,21 +351,47 @@ export default function Header() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                   </svg>
-                  <span>More</span>
-                  <svg className={`w-4 h-4 transition-transform ${isToolsDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="hidden xl:inline">More</span>
+                  <svg className={`w-4 h-4 transition-transform ${isMoreDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                {isToolsDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                {isMoreDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                    {/* Investments Section */}
+                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Investments</div>
+                    {investmentItems.map((item) => {
+                      const isActive = pathname === item.href
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setIsMoreDropdownOpen(false)}
+                          className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
+                            isActive
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          {item.icon}
+                          <span>{item.name}</span>
+                        </Link>
+                      )
+                    })}
+                    
+                    {/* Divider */}
+                    <div className="border-t border-gray-100 my-1"></div>
+                    
+                    {/* Tools Section */}
+                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tools</div>
                     {toolsItems.map((item) => {
                       const isActive = pathname === item.href
                       return (
                         <Link
                           key={item.name}
                           href={item.href}
-                          onClick={() => setIsToolsDropdownOpen(false)}
+                          onClick={() => setIsMoreDropdownOpen(false)}
                           className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
                             isActive
                               ? 'bg-blue-50 text-blue-700'
@@ -390,39 +403,19 @@ export default function Header() {
                         </Link>
                       )
                     })}
-                  </div>
-                )}
-              </div>
-
-              {/* Support Dropdown */}
-              <div className="relative" ref={supportDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsSupportDropdownOpen(!isSupportDropdownOpen)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-2 ${
-                    supportItems.some(item => pathname === item.href)
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <span>Support</span>
-                  <svg className={`w-4 h-4 transition-transform ${isSupportDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {isSupportDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                    
+                    {/* Divider */}
+                    <div className="border-t border-gray-100 my-1"></div>
+                    
+                    {/* Support Section */}
+                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Support</div>
                     {supportItems.map((item) => {
                       const isActive = pathname === item.href
                       return (
                         <Link
                           key={item.name}
                           href={item.href}
-                          onClick={() => setIsSupportDropdownOpen(false)}
+                          onClick={() => setIsMoreDropdownOpen(false)}
                           className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
                             isActive
                               ? 'bg-blue-50 text-blue-700'
@@ -437,6 +430,8 @@ export default function Header() {
                   </div>
                 )}
               </div>
+
+
             </nav>
           </SignedIn>
 
@@ -483,23 +478,120 @@ export default function Header() {
         {/* Mobile Navigation - Only show when signed in */}
         <SignedIn>
           {isMobileMenuOpen && (
-            <div className="lg:hidden border-t border-gray-200 pt-4 pb-3">
-              <div className="space-y-1">
-                {allNavigation.map((item) => {
+            <div className="lg:hidden border-t border-gray-200 pt-4 pb-3 max-h-96 overflow-y-auto">
+              {/* Main Navigation */}
+              <div className="space-y-1 mb-4">
+                <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Main</div>
+                {mainNavigation.map((item) => {
                   const isActive = pathname === item.href
                   return (
                     <Link
                       key={item.name}
                       href={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center space-x-3 ${
+                      className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                         isActive
                           ? 'bg-blue-100 text-blue-700 border border-blue-200'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >
-                      {item.mobileIcon || item.icon}
-                      <span>{item.name}</span>
+                      <div className="flex items-center space-x-2">
+                        {item.mobileIcon || item.icon}
+                        <span>{item.name}</span>
+                      </div>
+                    </Link>
+                  )
+                })}
+                
+                {/* Loans Link */}
+                <Link
+                  href="/loans"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                    pathname === '/loans' || pathname === '/emis'
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Loans & EMI</span>
+                  </div>
+                </Link>
+              </div>
+              
+              {/* Investments Section */}
+              <div className="space-y-1 mb-4">
+                <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Investments</div>
+                {investmentItems.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                        isActive
+                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        {item.mobileIcon || item.icon}
+                        <span>{item.name}</span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+              
+              {/* Tools Section */}
+              <div className="space-y-1 mb-4">
+                <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tools</div>
+                {toolsItems.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                        isActive
+                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        {item.mobileIcon || item.icon}
+                        <span>{item.name}</span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+              
+              {/* Support Section */}
+              <div className="space-y-1">
+                <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Support</div>
+                {supportItems.map((item) => {
+                  const isActive = pathname === item.href
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                        isActive
+                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        {item.mobileIcon || item.icon}
+                        <span>{item.name}</span>
+                      </div>
                     </Link>
                   )
                 })}

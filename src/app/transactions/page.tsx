@@ -4,6 +4,7 @@ import DataGrid from '@/components/DataGrid'
 import CustomDatePicker from '@/components/DatePicker'
 import { formatDateForDisplay, formatDateForInput, getToday } from '@/utils/dateHelpers'
 import { useEffect, useState } from 'react'
+import { AILoadingOrb, NeuralNetworkLoader } from '@/components/LoadingComponents'
 
 interface Account {
   id: string
@@ -28,6 +29,7 @@ export default function TransactionsPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [formLoading, setFormLoading] = useState(false)
   const [filter, setFilter] = useState('all') // all, income, expense
   const [transactionForm, setTransactionForm] = useState({ 
     type: 'income', 
@@ -79,6 +81,7 @@ export default function TransactionsPage() {
 
   const createTransaction = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormLoading(true)
     try {
       const response = await fetch('/api/transactions', {
         method: 'POST',
@@ -108,6 +111,8 @@ export default function TransactionsPage() {
       }
     } catch (err) {
       setError('Failed to create transaction')
+    } finally {
+      setFormLoading(false)
     }
   }
 
@@ -147,7 +152,19 @@ export default function TransactionsPage() {
   const totalExpense = expenseTransactions.reduce((sum, t) => sum + t.amount, 0)
   const netAmount = totalIncome - totalExpense
 
-  if (loading) return <div className="p-6">Loading...</div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-green-50">
+        <div className="mb-8">
+          <NeuralNetworkLoader />
+        </div>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Loading Transactions</h2>
+          <p className="text-gray-500">Fetching your financial records...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-6">
@@ -257,12 +274,16 @@ export default function TransactionsPage() {
               </div>
               <button 
                 type="submit" 
-                className={`w-full p-3 rounded-md transition-colors font-medium text-white ${
+                disabled={formLoading}
+                className={`w-full p-3 rounded-md transition-all font-medium text-white flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none disabled:opacity-50 disabled:cursor-not-allowed ${
                   transactionForm.type === 'income' 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-red-600 hover:bg-red-700'
+                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800' 
+                    : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
                 }`}
               >
+                {formLoading && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
                 Add {transactionForm.type === 'income' ? 'Income' : 'Expense'}
               </button>
             </form>

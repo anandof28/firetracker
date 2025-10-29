@@ -3,6 +3,8 @@
 import { formatDateForDisplay } from '@/utils/dateHelpers'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useEMIs } from '@/hooks/useEMIs'
+import { LoadingStates } from '@/components/LoadingComponents'
 
 interface Account {
   id: string
@@ -33,6 +35,53 @@ interface Gold {
   date: string
 }
 
+interface Loan {
+  id: string
+  loanName: string
+  loanType: string
+  principalAmount: number
+  interestRate: number
+  tenureMonths: number // matches Prisma schema
+  emiAmount: number
+  lender: string
+  loanAccountNumber?: string
+  startDate: string
+  endDate: string
+  currentBalance: number
+  totalPaidAmount: number
+  totalInterestPaid: number
+  remainingEmis: number
+  processingFee?: number
+  insurance?: number
+  prepaymentCharges?: number
+  isActive: boolean
+  description?: string
+  createdAt: string
+  updatedAt: string
+  userId: string
+}
+
+interface EMIPayment {
+  id: string
+  loanId: string
+  emiNumber: number
+  dueDate: string
+  paidDate?: string
+  emiAmount: number
+  principalAmount: number
+  interestAmount: number
+  amountPaid?: number
+  paymentMode?: string
+  transactionId?: string
+  status: string // "pending", "paid", "overdue", "partial"
+  lateFee?: number
+  prepaymentAmount?: number
+  description?: string
+  createdAt: string
+  updatedAt: string
+  userId: string
+}
+
 interface Transaction {
   id: string
   type: string
@@ -48,12 +97,215 @@ interface Transaction {
   }
 }
 
+// Upcoming EMIs Component
+function UpcomingEMIsSection() {
+  const { emis, loading, fetchEMIs, recordPayment } = useEMIs();
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedEMI, setSelectedEMI] = useState<any>(null);
+  const [paymentForm, setPaymentForm] = useState({
+    amountPaid: 0,
+    accountId: '',
+    paymentMode: 'bank_transfer',
+    description: '',
+  });
+
+  useEffect(() => {
+    // Fetch upcoming EMIs (next 7 days)
+    fetchEMIs({ upcoming: true, limit: 5 });
+    fetchAccounts();
+  }, [fetchEMIs]);
+
+  const fetchAccounts = async () => {
+    try {
+      const response = await fetch('/api/accounts');
+      if (response.ok) {
+        const accountsData = await response.json();
+        setAccounts(Array.isArray(accountsData) ? accountsData : []);
+      }
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+    }
+  };
+
+  const handleQuickPay = (emi: any) => {
+    setSelectedEMI(emi);
+    setPaymentForm({
+      amountPaid: emi.emiAmount,
+      accountId: '',
+      paymentMode: 'bank_transfer',
+      description: `EMI Payment - ${emi.loan?.loanName}`,
+    });
+    setShowPaymentModal(true);
+  };
+
+  const submitPayment = async () => {
+    if (!selectedEMI || !paymentForm.accountId) return;
+    
+    try {
+      await recordPayment({
+        emiId: selectedEMI.id,
+        ...paymentForm,
+      });
+      setShowPaymentModal(false);
+      setSelectedEMI(null);
+      // Refresh EMIs
+      fetchEMIs({ upcoming: true, limit: 5 });
+    } catch (error) {
+      console.error('Error recording payment:', error);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString('en-IN');
+  };
+
+  const getDaysUntilDue = (dueDate: Date | string) => {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  if (loading) return null;
+  if (!emis || emis.length === 0) return null;
+
+  return (
+    <>
+      {/* Upcoming EMIs Alert Section */}
+      <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-400 rounded-lg p-6 shadow-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-orange-800">Upcoming EMI Payments</h3>
+              <p className="text-orange-700">You have {emis.length} EMI payment{emis.length > 1 ? 's' : ''} due soon</p>
+            </div>
+          </div>
+          <Link
+            href="/emis"
+            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium"
+          >
+            View All EMIs
+          </Link>
+        </div>
+        
+        <div className="mt-4 space-y-3">
+          {emis.slice(0, 3).map((emi: any) => {
+            const daysLeft = getDaysUntilDue(emi.dueDate);
+            return (
+              <div key={emi.id} className="bg-white rounded-lg p-4 shadow-sm border border-orange-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900">{emi.loan?.loanName}</h4>
+                    <p className="text-sm text-gray-600">{emi.loan?.lender} • EMI #{emi.emiNumber}</p>
+                    <p className="text-sm text-orange-600 font-medium">
+                      Due: {formatDate(emi.dueDate)}
+                      {daysLeft === 0 ? ' (Today!)' : daysLeft === 1 ? ' (Tomorrow)' : ` (${daysLeft} days)`}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-gray-900">{formatCurrency(emi.emiAmount)}</p>
+                    <button
+                      onClick={() => handleQuickPay(emi)}
+                      className="mt-1 px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                    >
+                      Quick Pay
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick Payment Modal */}
+      {showPaymentModal && selectedEMI && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick EMI Payment</h3>
+            
+            <div className="mb-4 p-3 bg-gray-50 rounded">
+              <p className="font-medium">{selectedEMI.loan?.loanName}</p>
+              <p className="text-sm text-gray-600">EMI #{selectedEMI.emiNumber}</p>
+              <p className="text-lg font-semibold text-blue-600">{formatCurrency(selectedEMI.emiAmount)}</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Account *</label>
+                <select
+                  value={paymentForm.accountId}
+                  onChange={(e) => setPaymentForm(prev => ({ ...prev, accountId: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select account...</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name} (₹{account.balance?.toLocaleString()})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                <input
+                  type="number"
+                  value={paymentForm.amountPaid}
+                  onChange={(e) => setPaymentForm(prev => ({ ...prev, amountPaid: parseFloat(e.target.value) || 0 }))}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={submitPayment}
+                disabled={!paymentForm.accountId || !paymentForm.amountPaid}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Pay EMI
+              </button>
+              <button
+                onClick={() => {
+                  setShowPaymentModal(false);
+                  setSelectedEMI(null);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function DashboardContent() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [fds, setFds] = useState<FD[]>([])
   const [gold, setGold] = useState<Gold[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [budgets, setBudgets] = useState<any[]>([])
+  const [loans, setLoans] = useState<Loan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [currentGoldRate, setCurrentGoldRate] = useState<number>(9295) // Default current gold rate per gram
@@ -92,12 +344,13 @@ export default function DashboardContent() {
 
   const fetchAllData = async () => {
     try {
-      const [accountsRes, fdsRes, goldRes, transactionsRes, budgetsRes] = await Promise.all([
+      const [accountsRes, fdsRes, goldRes, transactionsRes, budgetsRes, loansRes] = await Promise.all([
         fetch('/api/accounts'),
         fetch('/api/fds'),
         fetch('/api/gold'),
         fetch('/api/transactions'),
-        fetch('/api/budgets')
+        fetch('/api/budgets'),
+        fetch('/api/loans')
       ])
 
       if (accountsRes.ok) {
@@ -119,6 +372,10 @@ export default function DashboardContent() {
       if (budgetsRes.ok) {
         const budgetsData = await budgetsRes.json()
         setBudgets(budgetsData)
+      }
+      if (loansRes.ok) {
+        const loansData = await loansRes.json()
+        setLoans(loansData)
       }
     } catch (err) {
       setError('Failed to fetch data')
@@ -168,6 +425,41 @@ export default function DashboardContent() {
     return amount * Math.pow(1 + rate / 100, diffYears)
   }
 
+  // Loan calculation functions
+  const calculateEMI = (principal: number, rate: number, tenureMonths: number) => {
+    const monthlyRate = rate / (12 * 100)
+    if (monthlyRate === 0) return principal / tenureMonths
+    return (principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / 
+           (Math.pow(1 + monthlyRate, tenureMonths) - 1)
+  }
+
+  const calculateRemainingBalance = (principal: number, rate: number, tenureMonths: number, paidEMIs: number) => {
+    if (paidEMIs >= tenureMonths) return 0
+    const monthlyRate = rate / (12 * 100)
+    if (monthlyRate === 0) return principal - (principal / tenureMonths * paidEMIs)
+    
+    const emi = calculateEMI(principal, rate, tenureMonths)
+    return principal * Math.pow(1 + monthlyRate, paidEMIs) - 
+           emi * ((Math.pow(1 + monthlyRate, paidEMIs) - 1) / monthlyRate)
+  }
+
+  const calculateLoanProgress = (loan: Loan) => {
+    const currentDate = new Date()
+    const startDate = new Date(loan.startDate)
+    const monthsElapsed = Math.max(0, Math.floor((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)))
+    
+    // Calculate theoretical remaining balance based on time elapsed
+    const theoreticalBalance = calculateRemainingBalance(loan.principalAmount, loan.interestRate, loan.tenureMonths, monthsElapsed)
+    
+    return {
+      monthsElapsed,
+      theoreticalBalance,
+      actualBalance: loan.currentBalance,
+      progressPercentage: ((loan.principalAmount - loan.currentBalance) / loan.principalAmount) * 100,
+      isOnTrack: loan.currentBalance <= theoreticalBalance * 1.05 // 5% tolerance
+    }
+  }
+
   const totalAccountBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
   const totalFDInvestment = fds.reduce((sum, fd) => sum + fd.amount, 0)
   const totalFDMaturity = fds.reduce((sum, fd) => sum + calculateFDMaturityAmount(fd.amount, fd.rate, fd.startDate, fd.endDate), 0)
@@ -182,23 +474,39 @@ export default function DashboardContent() {
   const totalExpense = expenseTransactions.reduce((sum, t) => sum + t.amount, 0)
   const netCashFlow = totalIncome - totalExpense
 
+  // Loan calculations with proper interest calculations
+  const activeLoans = loans.filter(loan => loan.isActive)
+  
+  // Calculate accurate loan statistics
+  const loansWithCalculations = activeLoans.map(loan => {
+    const progress = calculateLoanProgress(loan)
+    const calculatedEMI = calculateEMI(loan.principalAmount, loan.interestRate, loan.tenureMonths)
+    
+    return {
+      ...loan,
+      calculatedEMI,
+      progress,
+      // Use theoretical balance if current balance seems incorrect
+      correctedBalance: progress.isOnTrack ? loan.currentBalance : progress.theoreticalBalance
+    }
+  })
+
+  const totalLoanBalance = loansWithCalculations.reduce((sum, loan) => sum + loan.correctedBalance, 0)
+  const totalMonthlyEMI = loansWithCalculations.reduce((sum, loan) => sum + loan.calculatedEMI, 0)
+  const totalLoanPrincipal = activeLoans.reduce((sum, loan) => sum + loan.principalAmount, 0)
+  const totalInterestToBePaid = loansWithCalculations.reduce((sum, loan) => {
+    return sum + (loan.calculatedEMI * loan.tenureMonths - loan.principalAmount)
+  }, 0)
+
   const totalAssets = totalAccountBalance + totalFDInvestment + totalGoldCurrentValue
+  const netWorth = totalAssets - totalLoanBalance
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingStates.Dashboard />
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
@@ -207,29 +515,35 @@ export default function DashboardContent() {
         )}
 
         {/* Portfolio Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6">
-            <h3 className="text-blue-100 text-sm font-medium mb-2">Total Assets</h3>
-            <p className="text-3xl font-bold mb-1">₹{totalAssets.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-blue-100 text-sm">Across all investments</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-blue-100 text-xs lg:text-sm font-medium mb-2">Net Worth</h3>
+            <p className="text-lg lg:text-2xl xl:text-3xl font-bold mb-1 break-words leading-tight">₹{netWorth.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="text-blue-100 text-xs">Total Value</p>
           </div>
           
-          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-6">
-            <h3 className="text-green-100 text-sm font-medium mb-2">Net Cash Flow</h3>
-            <p className="text-3xl font-bold mb-1">₹{netCashFlow.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-green-100 text-sm">Income - Expenses</p>
+          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-green-100 text-xs lg:text-sm font-medium mb-2">Net Cash Flow</h3>
+            <p className="text-lg lg:text-2xl xl:text-3xl font-bold mb-1 break-words leading-tight">₹{netCashFlow.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="text-green-100 text-xs">Monthly Flow</p>
           </div>
           
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-6">
-            <h3 className="text-purple-100 text-sm font-medium mb-2">Bank Balance</h3>
-            <p className="text-3xl font-bold mb-1">₹{totalAccountBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            <p className="text-purple-100 text-sm">{accounts.length} accounts</p>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-purple-100 text-xs lg:text-sm font-medium mb-2">Bank Balance</h3>
+            <p className="text-lg lg:text-2xl xl:text-3xl font-bold mb-1 break-words leading-tight">₹{totalAccountBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="text-purple-100 text-xs">{accounts.length} accounts</p>
           </div>
           
-          <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg shadow-lg p-6">
-            <h3 className="text-yellow-100 text-sm font-medium mb-2">Gold Holdings</h3>
-            <p className="text-3xl font-bold mb-1">{totalGoldWeight.toFixed(1)}g</p>
-            <p className="text-yellow-100 text-sm">₹{totalGoldCurrentValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} value</p>
+          <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-yellow-100 text-xs lg:text-sm font-medium mb-2">Gold Holdings</h3>
+            <p className="text-lg lg:text-2xl xl:text-3xl font-bold mb-1 leading-tight">{totalGoldWeight.toFixed(1)}g</p>
+            <p className="text-yellow-100 text-xs">₹{totalGoldCurrentValue.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} value</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-red-100 text-xs lg:text-sm font-medium mb-2">Loan Debt</h3>
+            <p className="text-lg lg:text-2xl xl:text-3xl font-bold mb-1 break-words leading-tight">₹{totalLoanBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="text-red-100 text-xs">{activeLoans.length} active loans</p>
           </div>
         </div>
 
@@ -324,6 +638,124 @@ export default function DashboardContent() {
 
           
         </div>
+
+        {/* Upcoming EMIs Section */}
+        <UpcomingEMIsSection />
+
+        {/* Loan Overview Section */}
+        {loans.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">Loan Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <h3 className="text-red-800 font-medium mb-2">Total Outstanding</h3>
+                <p className="text-2xl font-bold text-red-600">
+                  ₹{totalLoanBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-xs text-red-600">Calculated Balance</p>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <h3 className="text-orange-800 font-medium mb-2">Monthly EMI</h3>
+                <p className="text-2xl font-bold text-orange-600">
+                  ₹{totalMonthlyEMI.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-xs text-orange-600">Calculated EMI</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h3 className="text-purple-800 font-medium mb-2">Total Interest</h3>
+                <p className="text-2xl font-bold text-purple-600">
+                  ₹{totalInterestToBePaid.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-xs text-purple-600">Over loan tenure</p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 className="text-blue-800 font-medium mb-2">Active Loans</h3>
+                <p className="text-2xl font-bold text-blue-600">{activeLoans.length}</p>
+                <p className="text-xs text-blue-600">Currently active</p>
+              </div>
+            </div>
+            
+            {/* Loan Details */}
+            <div className="space-y-4">
+              {loansWithCalculations.map((loan) => (
+                <div key={loan.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{loan.loanName}</h4>
+                      <p className="text-sm text-gray-600 capitalize">{loan.loanType} Loan</p>
+                      {!loan.progress.isOnTrack && (
+                        <span className="inline-block mt-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                          ⚠️ Calculation mismatch detected
+                        </span>
+                      )}
+                    </div>
+                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                      Active
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">Principal Amount</p>
+                      <p className="font-medium">₹{loan.principalAmount.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Calculated Balance</p>
+                      <p className="font-medium text-red-600">₹{loan.correctedBalance.toLocaleString('en-IN')}</p>
+                      {loan.correctedBalance !== loan.currentBalance && (
+                        <p className="text-xs text-gray-500">Stored: ₹{loan.currentBalance.toLocaleString('en-IN')}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Interest Rate</p>
+                      <p className="font-medium">{loan.interestRate}% p.a.</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Calculated EMI</p>
+                      <p className="font-medium">₹{loan.calculatedEMI.toLocaleString('en-IN')}</p>
+                      {Math.abs(loan.calculatedEMI - loan.emiAmount) > 100 && (
+                        <p className="text-xs text-gray-500">Stored: ₹{loan.emiAmount.toLocaleString('en-IN')}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Months Elapsed</p>
+                      <p className="font-medium">{loan.progress.monthsElapsed} / {loan.tenureMonths}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Progress bar showing loan completion */}
+                  <div className="mt-4">
+                    <div className="flex justify-between text-xs text-gray-600 mb-1">
+                      <span>Repayment Progress</span>
+                      <span>{loan.progress.progressPercentage.toFixed(1)}% completed</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${loan.progress.isOnTrack ? 'bg-green-500' : 'bg-yellow-500'}`}
+                        style={{ width: `${Math.min(loan.progress.progressPercentage, 100)}%` }}
+                      ></div>
+                    </div>
+                    
+                    {/* Additional loan insights */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 text-xs text-gray-600">
+                      <div>
+                        <p>Total Interest: <span className="font-medium">₹{(loan.calculatedEMI * loan.tenureMonths - loan.principalAmount).toLocaleString('en-IN')}</span></p>
+                      </div>
+                      <div>
+                        <p>Remaining EMIs: <span className="font-medium">{Math.max(0, loan.tenureMonths - loan.progress.monthsElapsed)}</span></p>
+                      </div>
+                      <div>
+                        <p>Status: <span className={`font-medium ${loan.progress.isOnTrack ? 'text-green-600' : 'text-yellow-600'}`}>
+                          {loan.progress.isOnTrack ? 'On Track' : 'Needs Review'}
+                        </span></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recent Activity & Summary */}
         <div className="space-y-6">

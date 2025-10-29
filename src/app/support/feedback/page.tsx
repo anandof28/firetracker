@@ -26,10 +26,21 @@ export default function BetaFeedback() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send feedback')
+      }
+
+      const result = await response.json()
       
-      toast.success('Thank you for your feedback! Your input is valuable to us.')
+      toast.success('Thank you for your feedback! Your input is valuable to us and has been sent to our team.')
       
       // Reset form
       setFeedbackData({
@@ -48,7 +59,8 @@ export default function BetaFeedback() {
         additionalComments: ''
       })
     } catch (error) {
-      toast.error('Failed to submit feedback. Please try again.')
+      console.error('Error submitting feedback:', error)
+      toast.error('Failed to submit feedback. Please try again or contact us directly.')
     } finally {
       setIsSubmitting(false)
     }

@@ -13,6 +13,8 @@ export default function ContactUs() {
     message: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [isSubscribing, setIsSubscribing] = useState(false)
 
   const categories = [
     { value: 'general', label: 'General Inquiry' },
@@ -31,13 +33,40 @@ export default function ContactUs() {
     { value: 'critical', label: 'Critical - System down', color: 'text-red-600' }
   ]
 
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubscribing(true)
+
+    try {
+      // Simulate newsletter subscription
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      toast.success('Successfully subscribed to our newsletter!')
+      setNewsletterEmail('')
+    } catch (error) {
+      toast.error('Subscription failed. Please try again.')
+    } finally {
+      setIsSubscribing(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send message')
+      }
+
+      const result = await response.json()
       
       toast.success('Your message has been sent successfully! We\'ll get back to you within 24 hours.')
       
@@ -216,28 +245,65 @@ export default function ContactUs() {
           {/* Contact Information */}
           <div className="lg:col-span-1">
             <div className="space-y-6">
-              {/* Support Hours */}
+              {/* Newsletter Signup */}
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Support Hours</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Monday - Friday:</span>
-                    <span className="font-medium">9:00 AM - 6:00 PM IST</span>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Stay Updated</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Get the latest updates, financial tips, and feature announcements delivered to your inbox.
+                </p>
+                <div className="mb-4 space-y-2">
+                  <div className="flex items-center text-xs text-gray-600">
+                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Feature updates & product news
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Saturday:</span>
-                    <span className="font-medium">10:00 AM - 4:00 PM IST</span>
+                  <div className="flex items-center text-xs text-gray-600">
+                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Financial planning tips
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Sunday:</span>
-                    <span className="font-medium">Closed</span>
+                  <div className="flex items-center text-xs text-gray-600">
+                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Exclusive beta features
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-sm text-green-800">
-                    <span className="font-medium">Beta Support:</span> During beta, we provide priority support and typically respond within 4-6 hours.
-                  </p>
-                </div>
+                <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                  <div>
+                    <input
+                      type="email"
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      placeholder="Enter your email address"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      disabled={isSubscribing}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubscribing || !newsletterEmail.trim()}
+                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {isSubscribing ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Subscribing...
+                      </>
+                    ) : (
+                      'Subscribe to Updates'
+                    )}
+                  </button>
+                </form>
+                <p className="text-xs text-gray-500 mt-3">
+                  We respect your privacy. Unsubscribe at any time.
+                </p>
               </div>
 
               {/* Response Times */}

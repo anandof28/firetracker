@@ -6,6 +6,7 @@ import { formatDateForDisplay, formatDateForInput } from '@/utils/dateHelpers'
 import { calculateMaturityAmount } from '@/utils/fdUtils'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { AILoadingOrb, NeuralNetworkLoader } from '@/components/LoadingComponents'
 
 interface FD {
   id: string
@@ -34,6 +35,7 @@ export default function FDsPage() {
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [error, setError] = useState('')
+  const [formLoading, setFormLoading] = useState(false)
   const [fdForm, setFdForm] = useState({ 
     amount: '', 
     rate: '', 
@@ -88,6 +90,7 @@ export default function FDsPage() {
 
   const createFD = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormLoading(true)
     try {
       const response = await fetch('/api/fds', {
         method: 'POST',
@@ -114,6 +117,8 @@ export default function FDsPage() {
       }
     } catch (err) {
       setError('Failed to create FD')
+    } finally {
+      setFormLoading(false)
     }
   }
 
@@ -144,22 +149,13 @@ export default function FDsPage() {
 
   if (!mounted || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6">
-            <div className="flex items-center gap-4 mb-4">
-              <Link 
-                href="/" 
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                ← Back to Dashboard
-              </Link>
-            </div>
-            <div className="text-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading FDs...</p>
-            </div>
-          </div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-yellow-50">
+        <div className="mb-8">
+          <NeuralNetworkLoader />
+        </div>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Loading Fixed Deposits</h2>
+          <p className="text-gray-500">Calculating your investment returns...</p>
         </div>
       </div>
     )
@@ -256,8 +252,12 @@ export default function FDsPage() {
               </div>
               <button 
                 type="submit" 
-                className="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors font-medium"
+                disabled={formLoading}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-md hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none"
               >
+                {formLoading && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
                 Add FD
               </button>
             </form>

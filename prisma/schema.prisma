@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,36 +8,36 @@ datasource db {
 }
 
 model User {
-  id        String   @id // Clerk user ID
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  accounts      Account[]
-  transactions  Transaction[]
-  fds           FD[]
-  gold          Gold[]
-  goals         Goal[]
-  fundAdditions FundAddition[]
-  budgets       Budget[]
-  mutualFunds   MutualFund[]
+  id              String           @id
+  email           String           @unique
+  name            String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  accounts        Account[]
+  budgets         Budget[]
+  calendarEvents  CalendarEvent[]
+  emiPayments     EMIPayment[]
+  fds             FD[]
+  featureRequests FeatureRequest[]
+  fundAdditions   FundAddition[]
+  goals           Goal[]
+  gold            Gold[]
+  loans           Loan[]
+  mutualFunds     MutualFund[]
+  transactions    Transaction[]
 
   @@map("users")
 }
 
 model Account {
-  id        String   @id @default(uuid())
-  name      String
-  balance   Float
-  createdAt DateTime @default(now())
-  userId    String
-
-  // Relations
+  id           String        @id @default(uuid())
+  name         String
+  balance      Float
+  createdAt    DateTime      @default(now())
+  userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
   fds          FD[]
+  transactions Transaction[]
 
   @@index([userId])
   @@map("accounts")
@@ -58,10 +52,8 @@ model FD {
   createdAt DateTime @default(now())
   accountId String
   userId    String
-
-  // Relations
-  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([accountId])
@@ -74,9 +66,7 @@ model Gold {
   value  Float
   date   DateTime @default(now())
   userId String
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("gold")
@@ -84,17 +74,15 @@ model Gold {
 
 model Transaction {
   id        String   @id @default(uuid())
-  type      String // "income" or "expense"
+  type      String
   amount    Float
   category  String
   note      String?
   date      DateTime @default(now())
   accountId String
   userId    String
-
-  // Relations
-  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([accountId])
@@ -103,40 +91,36 @@ model Transaction {
 
 model Budget {
   id        String    @id @default(uuid())
-  category  String // Category to budget for (e.g., "Grocery", "Travel", "Lifestyle")
-  limit     Float // Monthly spending limit
-  period    String    @default("monthly") // "monthly", "weekly", "yearly"
+  category  String
+  limit     Float
+  period    String    @default("monthly")
   startDate DateTime  @default(now())
-  endDate   DateTime? // Optional end date for budget
+  endDate   DateTime?
   isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, category, period]) // One budget per category per period per user
+  @@unique([userId, category, period])
   @@index([userId])
   @@index([category])
   @@map("budgets")
 }
 
 model Goal {
-  id           String    @id @default(uuid())
-  title        String
-  targetAmount Float
-  targetDate   DateTime?
-  category     String // "emergency", "investment", "savings", "purchase", "other"
-  description  String?
-  isCompleted  Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  userId       String
-
-  // Relations
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String         @id @default(uuid())
+  title         String
+  targetAmount  Float
+  targetDate    DateTime?
+  category      String
+  description   String?
+  isCompleted   Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userId        String
   fundAdditions FundAddition[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("goals")
@@ -150,10 +134,8 @@ model FundAddition {
   goalId    String
   userId    String
   createdAt DateTime @default(now())
-
-  // Relations
-  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([goalId])
@@ -161,40 +143,150 @@ model FundAddition {
 }
 
 model MutualFund {
-  id             String   @id @default(uuid())
-  schemeCode     Int // MF API scheme code
-  schemeName     String // Full scheme name from API
-  fundHouse      String // AMC name (e.g., "Axis Mutual Fund")
-  schemeType     String // Open/Close ended
-  schemeCategory String // Equity/Debt/Hybrid category
-  units          Float // Number of units held
-  avgPrice       Float // Average purchase price per unit
-  totalInvested  Float // Total amount invested
-  purchaseDate   DateTime @default(now())
-  currentNAV     Float? // Latest NAV value
-  lastUpdated    DateTime @default(now())
-  isActive       Boolean  @default(true)
-  notes          String? // Optional notes
-
-  // New fields for enhanced tracking
-  investmentType String @default("lumpsum") // "lumpsum" or "sip"
-  tags           String @default("[]") // JSON array of tags
-
-  // SIP specific fields (optional)
-  sipAmount    Float? // Monthly SIP amount
-  sipDate      Int? // Day of month (1-31)
-  sipStartDate DateTime? // SIP start date
-  sipEndDate   DateTime? // SIP end date (optional)
-  sipFrequency String? // "monthly" or "quarterly"
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(uuid())
+  schemeCode     Int
+  schemeName     String
+  fundHouse      String
+  schemeType     String
+  schemeCategory String
+  units          Float
+  avgPrice       Float
+  totalInvested  Float
+  purchaseDate   DateTime  @default(now())
+  currentNAV     Float?
+  lastUpdated    DateTime  @default(now())
+  isActive       Boolean   @default(true)
+  notes          String?
+  investmentType String    @default("lumpsum")
+  tags           String    @default("[]")
+  sipAmount      Float?
+  sipDate        Int?
+  sipStartDate   DateTime?
+  sipEndDate     DateTime?
+  sipFrequency   String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([schemeCode])
   @@map("mutual_funds")
+}
+
+model CalendarEvent {
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime
+  allDay          Boolean  @default(false)
+  priority        String   @default("medium")
+  category        String   @default("general")
+  status          String   @default("pending")
+  accountId       String?
+  fdId            String?
+  mutualFundId    String?
+  goldId          String?
+  reminderEnabled Boolean  @default(true)
+  reminderTime    Int      @default(15)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startDate])
+  @@index([category])
+  @@map("calendar_events")
+}
+
+model Loan {
+  id                String       @id @default(uuid())
+  loanName          String
+  loanType          String
+  principalAmount   Float
+  interestRate      Float
+  tenureMonths      Int
+  emiAmount         Float
+  lender            String
+  loanAccountNumber String?
+  startDate         DateTime
+  endDate           DateTime
+  currentBalance    Float
+  totalPaidAmount   Float        @default(0)
+  totalInterestPaid Float        @default(0)
+  remainingEmis     Int
+  processingFee     Float?
+  insurance         Float?
+  prepaymentCharges Float?
+  isActive          Boolean      @default(true)
+  description       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  userId            String
+  emiPayments       EMIPayment[]
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([loanType])
+  @@index([isActive])
+  @@map("loans")
+}
+
+model EMIPayment {
+  id               String    @id @default(uuid())
+  loanId           String
+  emiNumber        Int
+  dueDate          DateTime
+  paidDate         DateTime?
+  emiAmount        Float
+  principalAmount  Float
+  interestAmount   Float
+  amountPaid       Float?
+  paymentMode      String?
+  transactionId    String?
+  status           String    @default("pending")
+  lateFee          Float?
+  prepaymentAmount Float?
+  description      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  userId           String
+  loan             Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([loanId, emiNumber])
+  @@index([userId])
+  @@index([loanId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("emi_payments")
+}
+
+model FeatureRequest {
+  id                String   @id @default(uuid())
+  title             String
+  description       String
+  category          String
+  priority          String   @default("medium")
+  useCases          String?
+  alternatives      String?
+  submitterName     String?
+  submitterEmail    String?
+  status            String   @default("submitted")
+  adminNotes        String?
+  estimatedTimeline String?
+  votes             Int      @default(0)
+  isPublic          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([isPublic])
+  @@map("feature_requests")
 }
