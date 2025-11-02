@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useEMIs, EMIPayment } from '@/hooks/useEMIs';
-import { useLoans } from '@/hooks/useLoans';
 import { LoadingStates, ModalLoader } from '@/components/LoadingComponents';
+import PageHeader from '@/components/PageHeader';
+import { EMIPayment, useEMIs } from '@/hooks/useEMIs';
+import { useLoans } from '@/hooks/useLoans';
+import { useEffect, useState } from 'react';
 
 export default function EMIDashboard() {
   const { emis, loading, error, fetchEMIs, recordPayment } = useEMIs();
@@ -112,10 +113,10 @@ export default function EMIDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'overdue': return 'bg-red-100 text-red-800 border-red-200';
-      case 'partial': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'paid': return 'bg-green-100 text-gray-700 border-green-200';
+      case 'pending': return 'bg-yellow-100 text-gray-700 border-yellow-200';
+      case 'overdue': return 'bg-red-100 text-gray-700 border-red-200';
+      case 'partial': return 'bg-orange-100 text-gray-700 border-orange-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -125,19 +126,20 @@ export default function EMIDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            EMI Dashboard
-          </h1>
-          <p className="text-gray-600 mt-2">Track and manage your EMI payments</p>
-        </div>
+        <PageHeader
+          title="EMI Dashboard"
+          description="Track and manage your EMI payments"
+          buttonText="View All Loans"
+          onButtonClick={() => window.location.href = '/loans'}
+          buttonColor="primary"
+        />
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-r-lg mb-6 shadow-md">
+          <div className="bg-red-50 border-l-4 border-red-400 text-gray-700 p-4 rounded-r-lg mb-6 shadow-md">
             <div className="flex items-center">
-              <span className="text-red-400 mr-2">⚠️</span>
+              <span className="text-gray-700 mr-2">⚠️</span>
               <span className="font-medium">Error:</span>
               <span className="ml-2">{error}</span>
             </div>
@@ -150,7 +152,7 @@ export default function EMIDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Upcoming EMIs</p>
-                <p className="text-2xl font-bold text-blue-600">{upcomingEmis.length}</p>
+                <p className="text-2xl font-bold text-gray-700">{upcomingEmis.length}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
                 <span className="text-2xl">📅</span>
@@ -162,7 +164,7 @@ export default function EMIDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Overdue EMIs</p>
-                <p className="text-2xl font-bold text-red-600">{overdueEmis.length}</p>
+                <p className="text-2xl font-bold text-gray-700">{overdueEmis.length}</p>
               </div>
               <div className="bg-red-100 p-3 rounded-full">
                 <span className="text-2xl">⚠️</span>
@@ -174,7 +176,7 @@ export default function EMIDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Active Loans</p>
-                <p className="text-2xl font-bold text-green-600">{loans.filter(loan => loan.isActive).length}</p>
+                <p className="text-2xl font-bold text-gray-700">{loans.filter(loan => loan.isActive).length}</p>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
                 <span className="text-2xl">💰</span>
@@ -186,7 +188,7 @@ export default function EMIDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Monthly EMI Total</p>
-                <p className="text-2xl font-bold text-purple-600">
+                <p className="text-2xl font-bold text-gray-700">
                   {formatCurrency(loans.filter(loan => loan.isActive).reduce((sum, loan) => sum + loan.emiAmount, 0))}
                 </p>
               </div>
@@ -201,7 +203,7 @@ export default function EMIDashboard() {
         {overdueEmis.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 mb-8">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-red-600 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-gray-700 flex items-center gap-2">
                 <span>⚠️</span>
                 Overdue EMIs ({overdueEmis.length})
               </h2>
@@ -219,7 +221,7 @@ export default function EMIDashboard() {
                           </span>
                         </div>
                         <p className="text-gray-600 text-sm">{emi.loan?.lender} • EMI #{emi.emiNumber}</p>
-                        <p className="text-red-600 font-medium">Due: {formatDate(emi.dueDate)} ({Math.abs(getDaysUntilDue(emi.dueDate))} days overdue)</p>
+                        <p className="text-gray-700 font-medium">Due: {formatDate(emi.dueDate)} ({Math.abs(getDaysUntilDue(emi.dueDate))} days overdue)</p>
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-900">{formatCurrency(emi.emiAmount)}</p>
@@ -271,7 +273,7 @@ export default function EMIDashboard() {
                           <p className="text-gray-700">
                             Due: {formatDate(emi.dueDate)}
                             {daysUntilDue <= 7 && (
-                              <span className="ml-2 text-orange-600 font-medium">
+                              <span className="ml-2 text-gray-700 font-medium">
                                 ({daysUntilDue === 0 ? 'Due today' : `${daysUntilDue} days left`})
                               </span>
                             )}
@@ -318,7 +320,7 @@ export default function EMIDashboard() {
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">{selectedEMI.loan?.loanName}</h4>
                 <p className="text-gray-600">EMI #{selectedEMI.emiNumber} • Due: {formatDate(selectedEMI.dueDate)}</p>
-                <p className="text-lg font-semibold text-blue-600 mt-1">Amount: {formatCurrency(selectedEMI.emiAmount)}</p>
+                <p className="text-lg font-semibold text-gray-700 mt-1">Amount: {formatCurrency(selectedEMI.emiAmount)}</p>
               </div>
               
               <div className="grid gap-4">
@@ -348,7 +350,7 @@ export default function EMIDashboard() {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-blue-600 mt-1">EMI payment will be recorded as expense transaction from this account</p>
+                  <p className="text-xs text-gray-700 mt-1">EMI payment will be recorded as expense transaction from this account</p>
                 </div>
                 
                 <div>

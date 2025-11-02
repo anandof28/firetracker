@@ -299,7 +299,7 @@ export default function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-gray-700 hover:text-gray-700 font-medium"
               >
                 Mark all read
               </button>
@@ -347,7 +347,7 @@ export default function NotificationBell() {
                           {!notification.isRead && (
                             <button
                               onClick={() => markAsRead(notification.id)}
-                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-xs text-gray-700 hover:text-gray-700 font-medium"
                             >
                               Mark read
                             </button>
@@ -359,7 +359,7 @@ export default function NotificationBell() {
                                 markAsRead(notification.id)
                                 setIsDropdownOpen(false)
                               }}
-                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              className="text-xs text-gray-700 hover:text-gray-700 font-medium"
                             >
                               View details
                             </Link>
@@ -379,7 +379,7 @@ export default function NotificationBell() {
               <Link
                 href="/notifications"
                 onClick={() => setIsDropdownOpen(false)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-gray-700 hover:text-gray-700 font-medium"
               >
                 View all notifications
               </Link>

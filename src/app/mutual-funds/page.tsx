@@ -41,6 +41,7 @@ export default function MutualFundsPage() {
   const [searchResults, setSearchResults] = useState<MutualFundSearch[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isPageLoading, setIsPageLoading] = useState(true)
   const [isUpdatingNAVs, setIsUpdatingNAVs] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedFund, setSelectedFund] = useState<MutualFundSearch | null>(null)
@@ -96,7 +97,8 @@ export default function MutualFundsPage() {
   // Available tags
   const availableTags = ['Long-term', 'Retirement', 'Tax Saving', 'High Risk', 'Emergency Fund', 'Child Education', 'SIP']
 
-  const fetchMutualFunds = useCallback(async () => {
+  const fetchMutualFunds = useCallback(async (showLoading = false) => {
+    if (showLoading) setIsPageLoading(true)
     try {
       const response = await fetch('/api/mutual-funds')
       if (response.ok) {
@@ -105,6 +107,9 @@ export default function MutualFundsPage() {
       }
     } catch (error) {
       console.error('Error fetching mutual funds:', error)
+      toast.error('Failed to load mutual funds')
+    } finally {
+      if (showLoading) setIsPageLoading(false)
     }
   }, [])
 
@@ -457,7 +462,7 @@ export default function MutualFundsPage() {
 
   useEffect(() => {
     if (user) {
-      fetchMutualFunds()
+      fetchMutualFunds(true)
     }
   }, [user, fetchMutualFunds])
 
@@ -497,15 +502,15 @@ export default function MutualFundsPage() {
                 confirmModalConfig.type === 'warning' ? 'bg-yellow-100' : 'bg-blue-100'
               }`}>
                 {confirmModalConfig.type === 'danger' ? (
-                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 ) : confirmModalConfig.type === 'warning' ? (
-                  <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 ) : (
-                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 )}
@@ -656,13 +661,13 @@ export default function MutualFundsPage() {
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Total Gain/Loss</h3>
-            <p className={`text-2xl font-bold ${totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-2xl font-bold ${totalGainLoss >= 0 ? 'text-gray-700' : 'text-gray-700'}`}>
               {totalGainLoss >= 0 ? '+' : ''}₹{totalGainLoss.toLocaleString('en-IN')}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Return %</h3>
-            <p className={`text-2xl font-bold ${totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-2xl font-bold ${totalGainLossPercentage >= 0 ? 'text-gray-700' : 'text-gray-700'}`}>
               {totalGainLossPercentage >= 0 ? '+' : ''}{totalGainLossPercentage.toFixed(2)}%
             </p>
           </div>
@@ -847,8 +852,8 @@ export default function MutualFundsPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             fund.investmentType === 'sip' 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : 'bg-green-100 text-green-800'
+                              ? 'bg-blue-100 text-gray-700' 
+                              : 'bg-green-100 text-gray-700'
                           }`}>
                             {fund.investmentType === 'sip' ? 'SIP' : 'Lumpsum'}
                           </span>
@@ -885,7 +890,7 @@ export default function MutualFundsPage() {
                           ₹{currentValue.toLocaleString('en-IN')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className={gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          <div className={gainLoss >= 0 ? 'text-gray-700' : 'text-gray-700'}>
                             <div>{gainLoss >= 0 ? '+' : ''}₹{gainLoss.toLocaleString('en-IN')}</div>
                             <div className="text-xs">
                               ({gainLossPercentage >= 0 ? '+' : ''}{gainLossPercentage.toFixed(2)}%)
@@ -895,7 +900,7 @@ export default function MutualFundsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
                             onClick={() => deleteFund(fund.id, fund.schemeName)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
+                            className="text-gray-700 hover:text-gray-700 transition-colors"
                             title="Delete investment"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1031,8 +1036,8 @@ export default function MutualFundsPage() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           NAV on Purchase Date (₹)
-                          {isLoadingNAV && <span className="text-blue-500 text-xs ml-2">Loading...</span>}
-                          {navEditable && <span className="text-orange-500 text-xs ml-2">Manual entry required</span>}
+                          {isLoadingNAV && <span className="text-gray-700 text-xs ml-2">Loading...</span>}
+                          {navEditable && <span className="text-gray-700 text-xs ml-2">Manual entry required</span>}
                         </label>
                         <input
                           type="number"
@@ -1118,7 +1123,7 @@ export default function MutualFundsPage() {
                     {/* SIP Details - Show only for SIP investments */}
                     {formData.investmentType === 'sip' && (
                       <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                        <h4 className="text-sm font-medium text-blue-900 mb-4">SIP Details</h4>
+                        <h4 className="text-sm font-medium text-gray-700 mb-4">SIP Details</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">

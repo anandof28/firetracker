@@ -426,15 +426,15 @@ export default function NotificationsPage() {
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-sm font-medium text-gray-600">Unread</h3>
-            <p className="text-2xl font-bold text-red-600">{notifications.filter(n => !n.isRead).length}</p>
+            <p className="text-2xl font-bold text-gray-700">{notifications.filter(n => !n.isRead).length}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-sm font-medium text-gray-600">High Priority</h3>
-            <p className="text-2xl font-bold text-orange-600">{notifications.filter(n => n.severity === 'high').length}</p>
+            <p className="text-2xl font-bold text-gray-700">{notifications.filter(n => n.severity === 'high').length}</p>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-sm font-medium text-gray-600">Loan Alerts</h3>
-            <p className="text-2xl font-bold text-purple-600">
+            <p className="text-2xl font-bold text-gray-700">
               {notifications.filter(n => n.type === 'system' && (n.title.includes('EMI') || n.title.includes('Loan'))).length}
             </p>
           </div>
@@ -466,7 +466,7 @@ export default function NotificationsPage() {
           </div>
           <button
             onClick={markAllAsRead}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="text-sm text-gray-700 hover:text-gray-700 font-medium"
           >
             Mark all as read
           </button>
@@ -514,10 +514,10 @@ export default function NotificationsPage() {
                       <div className="flex items-center space-x-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                           notification.severity === 'high' 
-                            ? 'bg-red-100 text-red-800'
+                            ? 'bg-red-100 text-gray-700'
                             : notification.severity === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-green-100 text-green-800'
+                            ? 'bg-yellow-100 text-gray-700'
+                            : 'bg-green-100 text-gray-700'
                         }`}>
                           {notification.severity}
                         </span>
@@ -534,7 +534,7 @@ export default function NotificationsPage() {
                       {notification.actionUrl && (
                         <Link
                           href={notification.actionUrl}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors hover:underline"
+                          className="text-sm text-gray-700 hover:text-gray-700 font-medium transition-colors hover:underline"
                         >
                           {getActionButtonText(notification)}
                         </Link>

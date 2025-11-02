@@ -168,7 +168,7 @@ export default function Home() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="bg-red-50 border border-red-200 text-gray-700 px-4 py-3 rounded mb-6">
             <p>Error: {error}</p>
           </div>
         )}
@@ -177,23 +177,23 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Total Balance</h3>
-            <p className="text-2xl font-bold text-green-600">₹{totalBalance.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-700">₹{totalBalance.toFixed(2)}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">FD Value</h3>
-            <p className="text-2xl font-bold text-blue-600">₹{totalFDValue.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-700">₹{totalFDValue.toFixed(2)}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Gold Value</h3>
-            <p className="text-2xl font-bold text-yellow-600">₹{totalGoldValue.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-700">₹{totalGoldValue.toFixed(2)}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Total Income</h3>
-            <p className="text-2xl font-bold text-green-500">₹{totalIncome.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-700">₹{totalIncome.toFixed(2)}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-sm font-medium text-gray-500">Total Expenses</h3>
-            <p className="text-2xl font-bold text-red-500">₹{totalExpenses.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-700">₹{totalExpenses.toFixed(2)}</p>
           </div>
         </div>
 
@@ -451,7 +451,7 @@ export default function Home() {
                       <tr key={transaction.id} className="border-b">
                         <td className="p-2">
                           <span className={`px-2 py-1 rounded text-xs ${
-                            transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            transaction.type === 'income' ? 'bg-green-100 text-gray-700' : 'bg-red-100 text-gray-700'
                           }`}>
                             {transaction.type}
                           </span>
@@ -470,10 +470,10 @@ export default function Home() {
 
         {/* Database Info */}
         <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-green-800 mb-2">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">
             ✅ Fire Tracker Database Ready
           </h3>
-          <div className="text-sm text-green-700 space-y-2">
+          <div className="text-sm text-gray-700 space-y-2">
             <p>Your financial tracking system is ready! You can now:</p>
             <ul className="list-disc list-inside ml-4 space-y-1">
               <li>Track multiple accounts and their balances</li>

@@ -84,8 +84,8 @@ export default function BetaFeedback() {
             type="button"
             onClick={() => onChange(star)}
             className={`w-6 h-6 ${
-              star <= value ? 'text-yellow-400' : 'text-gray-300'
-            } hover:text-yellow-400 transition-colors`}
+              star <= value ? 'text-gray-700' : 'text-gray-300'
+            } hover:text-gray-700 transition-colors`}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -102,7 +102,7 @@ export default function BetaFeedback() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-block px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium mb-4">
+          <div className="inline-block px-4 py-2 bg-purple-100 text-gray-700 rounded-full text-sm font-medium mb-4">
             🚀 Beta Program
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Beta Feedback</h1>
@@ -337,15 +337,15 @@ export default function BetaFeedback() {
 
         {/* Beta Program Info */}
         <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
-          <h3 className="text-lg font-semibold text-purple-900 mb-4">Thank You for Being a Beta User! 🙏</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">Thank You for Being a Beta User! 🙏</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex items-center">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                 🎯
               </div>
               <div>
-                <div className="font-medium text-purple-900">Direct Impact</div>
-                <div className="text-purple-700">Your feedback shapes our roadmap</div>
+                <div className="font-medium text-gray-700">Direct Impact</div>
+                <div className="text-gray-700">Your feedback shapes our roadmap</div>
               </div>
             </div>
             <div className="flex items-center">
@@ -353,8 +353,8 @@ export default function BetaFeedback() {
                 🚀
               </div>
               <div>
-                <div className="font-medium text-purple-900">Early Access</div>
-                <div className="text-purple-700">Get new features first</div>
+                <div className="font-medium text-gray-700">Early Access</div>
+                <div className="text-gray-700">Get new features first</div>
               </div>
             </div>
             <div className="flex items-center">
@@ -362,8 +362,8 @@ export default function BetaFeedback() {
                 ⭐
               </div>
               <div>
-                <div className="font-medium text-purple-900">Lifetime Benefits</div>
-                <div className="text-purple-700">Special perks as a beta user</div>
+                <div className="font-medium text-gray-700">Lifetime Benefits</div>
+                <div className="text-gray-700">Special perks as a beta user</div>
               </div>
             </div>
           </div>

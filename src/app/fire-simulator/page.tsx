@@ -3,12 +3,12 @@
 import { useFireSimulation } from '@/hooks/useFireSimulation';
 import { useEffect } from 'react';
 import {
-        CartesianGrid,
-        Line,
-        LineChart,
-        ResponsiveContainer,
-        Tooltip,
-        XAxis, YAxis
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis, YAxis
 } from 'recharts';
 
 export default function FireSimulatorPage() {
@@ -27,8 +27,9 @@ export default function FireSimulatorPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-center">🔥 FIRE Simulator</h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-center">🔥 FIRE Simulator</h1>
 
       <div className="bg-white rounded-lg shadow p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -103,7 +104,7 @@ export default function FireSimulatorPage() {
           {loading ? 'Simulating...' : '🚀 Run Simulation'}
         </button>
 
-        {error && <div className="text-red-600">{error}</div>}
+        {error && <div className="text-gray-700">{error}</div>}
 
         {data && (
           <div className="space-y-6">
@@ -114,7 +115,7 @@ export default function FireSimulatorPage() {
               <div>🔥 FIRE Number: <span className="font-mono">₹{data.fireNumber.toLocaleString()}</span></div>
               <div>⏳ Years to FI: <span className="font-mono">{data.yearsToFI >= 0 ? data.yearsToFI : '∞'}</span></div>
               <div>🎯 Projected at Retirement: <span className="font-mono">₹{data.projectedPortfolioAtRetirement.toLocaleString()}</span></div>
-              <div>✅ Can Retire at Target Age: <span className={data.canRetireAtTargetAge ? 'text-green-600' : 'text-red-600'}>{data.canRetireAtTargetAge ? 'Yes' : 'No'}</span></div>
+              <div>✅ Can Retire at Target Age: <span className={data.canRetireAtTargetAge ? 'text-gray-700' : 'text-gray-700'}>{data.canRetireAtTargetAge ? 'Yes' : 'No'}</span></div>
               <div>📊 FI Progress: <span className="font-mono">{data.fiPercentage}%</span></div>
             </div>
 
@@ -158,6 +159,7 @@ export default function FireSimulatorPage() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

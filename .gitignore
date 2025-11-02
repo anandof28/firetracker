@@ -110,3 +110,6 @@ temp/
 *.bak
 *.backup
 *.old
+
+*storybook.log
+storybook-static

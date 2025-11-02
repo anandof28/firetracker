@@ -127,7 +127,7 @@ export default function Home() {
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="bg-red-50 border border-red-200 text-gray-700 px-4 py-3 rounded mb-4">
               <p>Error: {error}</p>
               <p className="text-sm mt-1">
                 Make sure your MySQL database is running and the connection string in .env is correct.
@@ -155,7 +155,7 @@ export default function Home() {
                         Created: {new Date(user.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                    <span className="bg-blue-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded">
                       ID: {user.id}
                     </span>
                   </div>
@@ -167,10 +167,10 @@ export default function Home() {
 
         {/* Database Setup Instructions */}
         <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">
             Database Setup Required
           </h3>
-          <div className="text-sm text-yellow-700 space-y-2">
+          <div className="text-sm text-gray-700 space-y-2">
             <p>To get started, you need to:</p>
             <ol className="list-decimal list-inside space-y-1 ml-4">
               <li>Install and start MySQL on your system</li>

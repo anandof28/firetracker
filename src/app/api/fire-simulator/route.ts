@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     // Last 12 months income/expenses
     const since = new Date();
     since.setMonth(since.getMonth() - 12);
-    const txns = await prisma.transaction.findMany({
+    const txns: { amount: number; type: 'income' | 'expense' }[] = await prisma.transaction.findMany({
       where: { userId, date: { gte: since } },
       select: { amount: true, type: true },
     });
@@ -77,25 +77,25 @@ export async function POST(req: NextRequest) {
 
     // Account Balances
     const accounts = await prisma.account.findMany({ where: { userId }, select: { balance: true } });
-    const accountTotal = accounts.reduce((sum, a) => sum + a.balance, 0);
+    const accountTotal = accounts.reduce((sum: number, a: { balance: number }) => sum + a.balance, 0);
 
     // Fixed Deposits
     const fds = await prisma.fD.findMany({ where: { userId }, select: { amount: true } });
-    const fdTotal = fds.reduce((sum, f) => sum + f.amount, 0);
+    const fdTotal = fds.reduce((sum: number, f: { amount: number }) => sum + f.amount, 0);
 
     // Mutual Funds
     const mfs = await prisma.mutualFund.findMany({
       where: { userId },
       select: { totalInvested: true, currentNAV: true, units: true },
     });
-    const mfTotal = mfs.reduce((sum, mf) => {
+    const mfTotal = mfs.reduce((sum: number, mf: { totalInvested: number | null; currentNAV: number | null; units: number | null }) => {
       if (mf.currentNAV && mf.units) return sum + mf.currentNAV * mf.units;
       return sum + (mf.totalInvested || 0);
     }, 0);
 
     // Gold Holdings
     const golds = await prisma.gold.findMany({ where: { userId }, select: { grams: true } });
-    const goldTotal = golds.reduce((sum, g) => sum + g.grams * GOLD_RATE_PER_GRAM, 0);
+    const goldTotal = golds.reduce((sum: number, g: { grams: number }) => sum + g.grams * GOLD_RATE_PER_GRAM, 0);
 
     // Portfolio & FIRE Metrics
     const currentPortfolio = accountTotal + fdTotal + mfTotal + goldTotal;

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { EMIPayment } from './useLoans';
 
 export type { EMIPayment } from './useLoans';

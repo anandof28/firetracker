@@ -1,9 +1,12 @@
 'use client'
 
-import DataGrid from '@/components/DataGrid'
+import { DataTable } from '@/components/DataTable'
+import { NeuralNetworkLoader } from '@/components/LoadingComponents'
+import PageHeader from '@/components/PageHeader'
+import { tokens } from '@/design/tokens'
 import { useAuth, useUser } from '@clerk/nextjs'
+import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
-import { AILoadingOrb, NeuralNetworkLoader } from '@/components/LoadingComponents'
 
 interface Account {
   id: string
@@ -21,6 +24,70 @@ export default function AccountsPage() {
   const [error, setError] = useState('')
   const [accountForm, setAccountForm] = useState({ name: '', balance: '' })
   const [formLoading, setFormLoading] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const deleteAccount = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this account?')) return
+    
+    try {
+      const response = await fetch(`/api/accounts/${id}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        fetchAccounts()
+      } else {
+        setError('Failed to delete account')
+      }
+    } catch (err) {
+      setError('Failed to delete account')
+    }
+  }
+
+  const accountColumns: ColumnDef<Account>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Account Name',
+      cell: (info) => (
+        <span style={{ fontWeight: 'bold', color: '#1f2937' }}>
+          {info.getValue() as string}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'balance',
+      header: 'Balance',
+      cell: (info) => (
+        <span style={{ fontFamily: 'monospace', color: '#1f2937' }}>
+          ₹{(info.getValue() as number).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'id',
+      header: 'Actions',
+      enableSorting: false,
+      cell: (info) => (
+        <button
+          onClick={() => deleteAccount(info.getValue() as string)}
+          style={{
+            backgroundColor: tokens.colors.light.danger,
+            color: '#FFFFFF',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 500,
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'background-color 180ms cubic-bezier(.2,.8,.2,1)'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E57373'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = tokens.colors.light.danger}
+        >
+          Delete
+        </button>
+      ),
+    },
+  ]
 
   const fetchAccounts = async () => {
     if (!isSignedIn) {
@@ -72,6 +139,7 @@ export default function AccountsPage() {
       if (response.ok) {
         fetchAccounts()
         setAccountForm({ name: '', balance: '' })
+        setIsModalOpen(false)
       } else {
         setError('Failed to create account')
       }
@@ -81,31 +149,6 @@ export default function AccountsPage() {
       setFormLoading(false)
     }
   }
-
-  const deleteAccount = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this account?')) return
-    
-    try {
-      const response = await fetch(`/api/accounts/${id}`, {
-        method: 'DELETE',
-      })
-      if (response.ok) {
-        fetchAccounts()
-      } else {
-        setError('Failed to delete account')
-      }
-    } catch (err) {
-      setError('Failed to delete account')
-    }
-  }
-
-  // Make deleteAccount available globally for AG Grid
-  useEffect(() => {
-    (window as any).deleteAccount = deleteAccount;
-    return () => {
-      delete (window as any).deleteAccount;
-    };
-  }, []);
 
   if (!mounted || !isLoaded || loading) {
     return (
@@ -141,85 +184,68 @@ export default function AccountsPage() {
   return (
     <div className="p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Bank Accounts</h1>
-          <p className="text-gray-600 mt-2">Manage your bank accounts and balances</p>
-        </div>
+        <PageHeader
+          title="Bank Accounts"
+          description="Manage your bank accounts and balances"
+          buttonText="Add Account"
+          onButtonClick={() => setIsModalOpen(true)}
+          buttonColor="primary"
+        />
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-gray-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Add Account Form */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Add New Account</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Account Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., SBI Savings, HDFC Current"
-                  value={accountForm.name}
-                  onChange={(e) => setAccountForm({...accountForm, name: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Balance (₹)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Enter current balance"
-                  value={accountForm.balance}
-                  onChange={(e) => setAccountForm({...accountForm, balance: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <button 
-                type="submit" 
-                disabled={formLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-md hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none"
-              >
-                {formLoading && (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                )}
-                Add Account
-              </button>
-            </form>
-          </div>
+        <div className="grid grid-cols-1 gap-6">
 
-          {/* Summary Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Summary</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                <span className="text-gray-700 font-medium">Total Accounts</span>
-                <span className="text-2xl font-bold text-green-600">{accounts.length}</span>
+          {/* Summary Cards */}
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            padding: '20px 24px'
+          }}>
+            <h2 style={{ fontSize: '17px', fontWeight: 600, color: '#1F2937', marginBottom: '16px' }}>Summary</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              <div style={{
+                padding: '16px',
+                backgroundColor: 'rgba(163, 201, 168, 0.08)',
+                borderRadius: '10px',
+                borderLeft: '3px solid #A3C9A8'
+              }}>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '6px' }}>Total Accounts</div>
+                <div style={{ fontSize: '26px', fontWeight: 600, color: '#A3C9A8' }}>{accounts.length}</div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                <span className="text-gray-700 font-medium">Total Balance</span>
-                <span className="text-2xl font-bold text-blue-600">
+              <div style={{
+                padding: '16px',
+                backgroundColor: 'rgba(123, 170, 207, 0.08)',
+                borderRadius: '10px',
+                borderLeft: '3px solid #7BAACF'
+              }}>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '6px' }}>Total Balance</div>
+                <div style={{ fontSize: '26px', fontWeight: 600, color: '#7BAACF' }}>
                   ₹{accounts.reduce((sum, acc) => sum + acc.balance, 0).toFixed(2)}
-                </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Accounts Table */}
-        <div className="mt-6 bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800">Your Accounts</h2>
+        <div style={{
+          marginTop: '24px',
+          backgroundColor: '#FFFFFF',
+          borderRadius: '14px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            padding: '20px 24px',
+            borderBottom: '1.5px solid #E5E7EB'
+          }}>
+            <h2 style={{ fontSize: '17px', fontWeight: 600, color: '#1F2937' }}>Your Accounts</h2>
           </div>
           
           {accounts.length === 0 ? (
@@ -227,49 +253,225 @@ export default function AccountsPage() {
               No accounts found. Add your first account above.
             </div>
           ) : (
-            <DataGrid
-              rowData={accounts}
-              getRowId={(params) => params.data.id}
-              onGridReady={(params) => {
-                  params.api.sizeColumnsToFit();
-              }}
-              columnDefs={[
-                {
-                  headerName: 'Account Name',
-                  field: 'name',
-                  flex: 2,
-                  cellStyle: { fontWeight: 'bold', color: '#1f2937' }
-                },
-                {
-                  headerName: 'Balance',
-                  field: 'balance',
-                  flex: 1,
-                  type: 'rightAligned',
-                  valueFormatter: (params: any) => `₹${params.value.toFixed(2)}`,
-                  cellStyle: { fontFamily: 'monospace', textAlign: 'right', color: '#1f2937' }
-                },
-                {
-                  headerName: 'Actions',
-                  field: 'id',
-                  width: 120,
-                  cellRenderer: (params: any) => {
-                    return (
-                      <button
-                        onClick={() => deleteAccount(params.value)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                      >
-                        Delete
-                      </button>
-                    );
-                  },
-                  sortable: false,
-                  filter: false
-                }
-              ]}
+            <DataTable
+              data={accounts}
+              columns={accountColumns}
+              enableSorting={true}
+              enablePagination={true}
+              pageSize={10}
             />
           )}
         </div>
       </div>
+
+      {/* Add Account Modal */}
+      {isModalOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(17, 24, 39, 0.45)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1300,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '14px',
+              maxWidth: '1200px',
+              width: '100%',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.10)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              background: 'linear-gradient(135deg, #7BAACF 0%, #6AA0C8 100%)',
+              padding: '20px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderTopLeftRadius: '14px',
+              borderTopRightRadius: '14px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  padding: '8px',
+                  borderRadius: '10px'
+                }}>
+                  <svg width="20" height="20" fill="none" stroke="#FFFFFF" viewBox="0 0 24 24" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF' }}>Add New Account</h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{
+                  color: '#FFFFFF',
+                  backgroundColor: 'transparent',
+                  padding: '6px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 180ms cubic-bezier(.2,.8,.2,1)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Account Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., SBI Savings, HDFC Current"
+                    value={accountForm.name}
+                    onChange={(e) => setAccountForm({...accountForm, name: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1.5px solid #E5E7EB',
+                      borderRadius: '10px',
+                      color: '#1F2937',
+                      fontSize: '15px',
+                      outline: 'none',
+                      transition: 'all 180ms cubic-bezier(.2,.8,.2,1)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = '#7BAACF';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(123, 170, 207, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = '#E5E7EB';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Current Balance (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Enter current balance"
+                    value={accountForm.balance}
+                    onChange={(e) => setAccountForm({...accountForm, balance: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1.5px solid #E5E7EB',
+                      borderRadius: '10px',
+                      color: '#1F2937',
+                      fontSize: '15px',
+                      outline: 'none',
+                      transition: 'all 180ms cubic-bezier(.2,.8,.2,1)'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderColor = '#7BAACF';
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(123, 170, 207, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderColor = '#E5E7EB';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+              
+              {/* Fixed Action Bar */}
+              <div style={{
+                borderTop: '1.5px solid #E5E7EB',
+                padding: '16px 24px',
+                backgroundColor: '#F9FAFB',
+                borderBottomLeftRadius: '14px',
+                borderBottomRightRadius: '14px',
+                display: 'flex',
+                gap: '12px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 24px',
+                    border: '1.5px solid #E5E7EB',
+                    borderRadius: '10px',
+                    color: '#4B5563',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    backgroundColor: '#FFFFFF',
+                    cursor: 'pointer',
+                    transition: 'all 180ms cubic-bezier(.2,.8,.2,1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F9FAFB';
+                    e.currentTarget.style.borderColor = '#D1D5DB';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '#E5E7EB';
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={formLoading}
+                  style={{
+                    flex: 1,
+                    padding: '10px 24px',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    color: '#FFFFFF',
+                    backgroundColor: '#7BAACF',
+                    border: 'none',
+                    cursor: formLoading ? 'not-allowed' : 'pointer',
+                    opacity: formLoading ? 0.6 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 180ms cubic-bezier(.2,.8,.2,1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!formLoading) e.currentTarget.style.backgroundColor = '#6AA0C8';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!formLoading) e.currentTarget.style.backgroundColor = '#7BAACF';
+                  }}
+                >
+                  {formLoading && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  Add Account
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useLoans, Loan } from '@/hooks/useLoans';
 import { LoadingStates, ModalLoader } from '@/components/LoadingComponents';
+import PageHeader from '@/components/PageHeader';
+import { Loan, useLoans } from '@/hooks/useLoans';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function LoansPage() {
   const {
@@ -35,7 +37,12 @@ export default function LoansPage() {
     remainingEmis: 0,
     isActive: true,
     description: '',
+    notificationEmail: '',
+    reminderDays: 3,
   });
+
+  // Fetch complete loan data for viewing details
+
 
   useEffect(() => {
     fetchLoans(filter);
@@ -98,6 +105,8 @@ export default function LoansPage() {
       totalInterestPaid: 0,
       remainingEmis: 0,
       isActive: true,
+      notificationEmail: '',
+      reminderDays: 3,
       description: '',
     });
   };
@@ -162,32 +171,24 @@ export default function LoansPage() {
     }).format(amount);
   };
 
-  const totalLoansValue = loans.reduce((sum, loan) => sum + loan.currentBalance, 0);
+  const totalLoansValue = loans.reduce((sum, loan) => sum + (loan.totalOutstanding || loan.currentBalance), 0);
   const totalMonthlyEMI = loans.filter(loan => loan.isActive).reduce((sum, loan) => sum + loan.emiAmount, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Loan Management
-            </h1>
-            <p className="text-gray-600 mt-2">Track and manage your loans and EMI payments</p>
-          </div>
-          <button
-            onClick={openLoanForm}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
-          >
-            <span className="text-lg">➕</span>
-            Add New Loan
-          </button>
-        </div>
+        <PageHeader
+          title="Loan Management"
+          description="Track and manage your loans and EMI payments"
+          buttonText="Add New Loan"
+          onButtonClick={openLoanForm}
+          buttonColor="primary"
+        />
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-r-lg mb-6 shadow-md">
+          <div className="bg-red-50 border-l-4 border-red-400 text-gray-700 p-4 rounded-r-lg mb-6 shadow-md">
             <div className="flex items-center">
-              <span className="text-red-400 mr-2">⚠️</span>
+              <span className="text-gray-700 mr-2">⚠️</span>
               <span className="font-medium">Error:</span>
               <span className="ml-2">{error}</span>
             </div>
@@ -195,38 +196,69 @@ export default function LoansPage() {
         )}
 
         {/* Summary Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+                {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            padding: '24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            border: '1px solid #F3F4F6'
+          }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Total Outstanding</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalLoansValue)}</p>
+                <p style={{ fontSize: '24px', fontWeight: 700, color: '#E88A8A' }}>{formatCurrency(totalLoansValue)}</p>
               </div>
-              <div className="bg-red-100 p-3 rounded-full">
+              <div style={{
+                backgroundColor: 'rgba(232, 138, 138, 0.15)',
+                padding: '12px',
+                borderRadius: '50%'
+              }}>
                 <span className="text-2xl">💰</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            padding: '24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            border: '1px solid #F3F4F6'
+          }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Monthly EMI</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalMonthlyEMI)}</p>
+                <p style={{ fontSize: '24px', fontWeight: 700, color: '#7BAACF' }}>{formatCurrency(totalMonthlyEMI)}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
+              <div style={{
+                backgroundColor: 'rgba(123, 170, 207, 0.15)',
+                padding: '12px',
+                borderRadius: '50%'
+              }}>
                 <span className="text-2xl">📅</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            padding: '24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            border: '1px solid #F3F4F6'
+          }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Active Loans</p>
-                <p className="text-2xl font-bold text-gray-900">{loans.filter(loan => loan.isActive).length}</p>
+                <p style={{ fontSize: '24px', fontWeight: 700, color: '#7CC5A0' }}>{loans.filter(loan => loan.isActive).length}</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-full">
+              <div style={{
+                backgroundColor: 'rgba(124, 197, 160, 0.15)',
+                padding: '12px',
+                borderRadius: '50%'
+              }}>
                 <span className="text-2xl">📊</span>
               </div>
             </div>
@@ -307,16 +339,23 @@ export default function LoansPage() {
                           Closed
                         </span>
                       )}
+                      <Link
+                        href={`/loans/${loan.id}`}
+                        className="p-2 text-gray-700 hover:bg-green-50 rounded-full transition-colors inline-flex items-center"
+                        title="View Details & EMI History"
+                      >
+                        👁️
+                      </Link>
                       <button
                         onClick={() => editLoan(loan)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                        className="p-2 text-gray-700 hover:bg-blue-50 rounded-full transition-colors"
                         title="Edit Loan"
                       >
                         ✏️
                       </button>
                       <button
                         onClick={() => handleDeleteLoan(loan.id!)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        className="p-2 text-gray-700 hover:bg-red-50 rounded-full transition-colors"
                         title="Delete Loan"
                       >
                         🗑️
@@ -326,40 +365,140 @@ export default function LoansPage() {
 
                   <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Outstanding Balance</p>
-                      <p className="text-lg font-semibold text-red-600">{formatCurrency(loan.currentBalance)}</p>
+                      <p className="text-sm text-gray-600 mb-1">Total Outstanding</p>
+                      <p className="text-lg font-semibold text-gray-700">{formatCurrency(loan.totalOutstanding || loan.currentBalance)}</p>
+                      <div className="text-xs text-gray-500 mt-1 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Principal:</span>
+                          <span className="font-medium text-gray-700">
+                            {formatCurrency(loan.pendingPrincipal || loan.currentBalance)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Interest:</span>
+                          <span className="font-medium text-gray-700">
+                            {formatCurrency(loan.pendingInterest || 0)}
+                          </span>
+                        </div>
+                      
+                      </div>
                     </div>
                     
                     <div className="bg-gray-50 rounded-lg p-4">
                       <p className="text-sm text-gray-600 mb-1">Monthly EMI</p>
-                      <p className="text-lg font-semibold text-blue-600">{formatCurrency(loan.emiAmount)}</p>
+                      <p className="text-lg font-semibold text-gray-700">{formatCurrency(loan.emiAmount)}</p>
                     </div>
                     
                     <div className="bg-gray-50 rounded-lg p-4">
                       <p className="text-sm text-gray-600 mb-1">Remaining EMIs</p>
-                      <p className="text-lg font-semibold text-orange-600">{loan.remainingEmis}</p>
+                      <p className="text-lg font-semibold text-gray-700">{loan.remainingEmis}</p>
                     </div>
                     
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-1">Completion</p>
+                      <p className="text-sm text-gray-600 mb-1">Time-Based Completion</p>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div 
-                            className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-500"
                             style={{ width: `${loan.completionPercentage || 0}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm font-medium text-green-600">
+                        <span className="text-sm font-medium text-gray-700">
                           {Math.round(loan.completionPercentage || 0)}%
                         </span>
+                      </div>
+                      
+                      <div className="mt-2 text-xs text-gray-500">
+                        ⏱️ {loan.monthsElapsed || 0} months elapsed of {loan.tenureMonths} months
+                        <div className="text-xs text-gray-700 mt-1">
+                          📊 Based on loan start date ({new Date(loan.startDate).toLocaleDateString('en-IN')})
+                        </div>
+                        <div className="text-xs text-gray-700 mt-1">
+                          📋 {loan.remainingEmis} EMIs remaining (time-based)
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {loan.nextEmiDue && (
-                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <p className="text-sm text-yellow-800">
-                        <span className="font-medium">Next EMI Due:</span> {new Date(loan.nextEmiDue).toLocaleDateString('en-IN')}
+                  {/* Pending Amounts Breakdown */}
+                  {(loan.pendingPrincipal || loan.pendingInterest) && (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-3">📊 Pending Amounts Breakdown</h4>
+                      
+                      {/* Principal Progress Bar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Principal Progress</span>
+                          <span>{Math.round(((loan.principalAmount - (loan.pendingPrincipal || 0)) / loan.principalAmount) * 100)}% paid</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                            style={{ 
+                              width: `${Math.round(((loan.principalAmount - (loan.pendingPrincipal || 0)) / loan.principalAmount) * 100)}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>Paid: {formatCurrency(loan.principalAmount - (loan.pendingPrincipal || 0))}</span>
+                          <span>Remaining: {formatCurrency(loan.pendingPrincipal || 0)}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-gray-700">
+                            {formatCurrency(loan.pendingPrincipal || loan.currentBalance)}
+                          </p>
+                          <p className="text-xs text-gray-600">Pending Principal</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-gray-700">
+                            {formatCurrency(loan.pendingInterest || 0)}
+                          </p>
+                          <p className="text-xs text-gray-600">Pending Interest</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">
+                            Total Pending: <span className="font-semibold text-gray-700">
+                              {formatCurrency((loan.pendingPrincipal || loan.currentBalance) + (loan.pendingInterest || 0))}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {loan.nextEmiDue && (
+                      <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+                        <p className="text-sm text-gray-700">
+                          <span className="font-medium">Next EMI Due:</span> {new Date(loan.nextEmiDue).toLocaleDateString('en-IN')}
+                          <span className="block mt-1 text-xs">
+                            💰 ₹{loan.emiAmount?.toLocaleString('en-IN')} per month
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                    
+                    {loan.emiEndDate && (
+                      <div className="p-3 rounded-lg border bg-green-50 border-green-200">
+                        <p className="text-sm text-gray-700">
+                          <span className="font-medium">EMI End Date:</span> {new Date(loan.emiEndDate).toLocaleDateString('en-IN')}
+                          <span className="block mt-1 text-xs">
+                            🎯 Loan completion date
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {loan.notificationEmail && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">📧 EMI Reminders:</span> {loan.notificationEmail}
                       </p>
                     </div>
                   )}
@@ -371,23 +510,44 @@ export default function LoansPage() {
 
         {/* Loan Form Modal */}
         {showLoanForm && (
-          <div className="fixed inset-0 bg-gradient-to-br from-black/30 via-gray-900/40 to-black/30 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-            <div className="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl transform animate-scaleIn border border-gray-200">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  {editingLoan ? '✏️ Edit Loan' : '➕ Add New Loan'}
-                </h3>
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => {
+              setShowLoanForm(false);
+              setEditingLoan(null);
+              resetForm();
+            }}
+          >
+            <div 
+              className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-linear-to-r from-blue-600 to-blue-700 p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">
+                    {editingLoan ? 'Edit Loan' : 'Add New Loan'}
+                  </h2>
+                </div>
                 <button
                   onClick={() => {
                     setShowLoanForm(false);
                     setEditingLoan(null);
                     resetForm();
                   }}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
                 >
-                  <span className="text-gray-400 hover:text-gray-600 text-xl">✕</span>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
+
+              <div className="overflow-y-auto max-h-[calc(90vh-88px)] p-6">
               
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -494,7 +654,7 @@ export default function LoansPage() {
                     placeholder="Auto-calculated"
                     readOnly
                   />
-                  <p className="text-xs text-blue-600 mt-1">Auto-calculated based on principal, rate, and tenure</p>
+                  <p className="text-xs text-gray-700 mt-1">Auto-calculated based on principal, rate, and tenure</p>
                 </div>
                 
                 <div>
@@ -552,26 +712,44 @@ export default function LoansPage() {
                   placeholder="Add any additional notes about this loan..."
                 />
               </div>
+
+              <div className="mt-6">
+                <label className="block font-semibold text-gray-700 mb-3">
+                  📧 EMI Notification Email
+                </label>
+                <input
+                  type="email"
+                  value={loanForm.notificationEmail || ''}
+                  onChange={(e) => setLoanForm(prev => ({ ...prev, notificationEmail: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  placeholder="Enter email address for EMI reminders (optional)"
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  💡 Receive EMI reminders 3 days before the due date
+                </p>
+              </div>
               
               <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-200">
                 <button
                   onClick={editingLoan ? handleUpdateLoan : handleCreateLoan}
                   disabled={!loanForm.loanName || !loanForm.lender || !loanForm.principalAmount}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
+                  className="flex-1 px-6 py-3 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-md hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium transform hover:scale-105 disabled:transform-none"
                 >
-                  {editingLoan ? '✅ Update Loan' : '➕ Create Loan'}
+                  {editingLoan ? 'Update Loan' : 'Create Loan'}
                 </button>
                 
                 <button
+                  type="button"
                   onClick={() => {
                     setShowLoanForm(false);
                     setEditingLoan(null);
                     resetForm();
                   }}
-                  className="px-8 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold"
+                  className="flex-1 px-6 py-3 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                 >
-                  ❌ Cancel
+                  Cancel
                 </button>
+              </div>
               </div>
             </div>
           </div>
@@ -580,6 +758,7 @@ export default function LoansPage() {
         {/* Loading Overlay for Form Actions */}
         {formLoading && <ModalLoader message="Processing loan data..." />}
       </div>
+
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface Loan {
   id?: string;
@@ -12,15 +12,23 @@ export interface Loan {
   loanAccountNumber?: string;
   startDate: Date;
   endDate?: Date;
+  emiEndDate?: Date; // New: EMI end date
   currentBalance: number;
   totalPaidAmount: number;
   totalInterestPaid: number;
   remainingEmis: number;
+  totalOutstanding?: number; // New: Total outstanding (principal + interest)
+  pendingPrincipal?: number; // New: Remaining principal amount
+  pendingInterest?: number; // New: Remaining interest amount
   processingFee?: number;
   insurance?: number;
+  notificationEmail?: string;
+  reminderDays?: number;
   prepaymentCharges?: number;
-  isActive: boolean;
+  isActive?: boolean;
   description?: string;
+  monthsElapsed?: number;
+  isOverdue?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   emiPayments?: EMIPayment[];

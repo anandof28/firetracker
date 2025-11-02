@@ -1,6 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import {
+    calculateEMI,
+    calculateEMIEndDate,
+    generateEMISchedule as calculateEMISchedule,
+    calculateNextEMIDue,
+    calculatePendingAmounts,
+    calculateTimeBasedCompletion
+} from '@/lib/emi-calculator';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,13 +48,53 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate additional loan statistics
-    const loansWithStats = loans.map((loan: any) => ({
-      ...loan,
-      totalEmisPaid: loan.emiPayments.filter((emi: any) => emi.status === 'paid').length,
-      nextEmiDue: loan.emiPayments.find((emi: any) => emi.status === 'pending')?.dueDate || null,
-      completionPercentage: loan.tenureMonths > 0 ? 
-        ((loan.tenureMonths - loan.remainingEmis) / loan.tenureMonths) * 100 : 0,
-    }));
+    const loansWithStats = loans.map((loan: any) => {
+      const totalEmisPaid = loan.emiPayments.filter((emi: any) => emi.status === 'paid').length;
+      
+      // Calculate completion based ONLY on time elapsed from loan start date
+      const startDate = new Date(loan.startDate);
+      const currentDate = new Date();
+      
+      const { completionPercentage, monthsElapsed } = calculateTimeBasedCompletion(
+        startDate,
+        loan.tenureMonths,
+        currentDate
+      );
+      
+      // Calculate remaining EMIs based on time elapsed
+      const remainingEMIsTimeBase = Math.max(0, loan.tenureMonths - Math.floor(monthsElapsed));
+      
+      // Calculate EMI end date
+      const emiEndDate = calculateEMIEndDate(startDate, loan.tenureMonths);
+      
+      // Calculate next EMI due date
+      const nextEmiDue = calculateNextEMIDue(startDate, monthsElapsed, loan.tenureMonths);
+      
+      // Calculate individual pending amounts
+      const pendingAmounts = calculatePendingAmounts(
+        loan.principalAmount, // Original principal amount
+        loan.interestRate,
+        loan.tenureMonths, // Total tenure
+        monthsElapsed // Months elapsed since loan start
+      );
+      
+      // Calculate total outstanding using the accurate remaining principal
+      const totalOutstanding = pendingAmounts.totalPending;
+      
+      return {
+        ...loan,
+        totalEmisPaid,
+        nextEmiDue,
+        completionPercentage,
+        monthsElapsed,
+        remainingEmis: remainingEMIsTimeBase, // Override with time-based calculation
+        emiEndDate,
+        totalOutstanding, // New field with principal + interest
+        pendingPrincipal: pendingAmounts.pendingPrincipal,
+        pendingInterest: pendingAmounts.pendingInterest,
+        isOverdue: false, // Removed overdue logic as requested
+      };
+    });
 
     return NextResponse.json(loansWithStats);
   } catch (error) {
@@ -76,16 +124,21 @@ export async function POST(request: NextRequest) {
       processingFee,
       insurance,
       prepaymentCharges,
-      description
+      description,
+      notificationEmail,
+      reminderDays
     } = body;
 
     // Validate required fields
-    if (!loanName || !loanType || !principalAmount || !interestRate || !tenureMonths || !emiAmount || !lender || !startDate) {
+    if (!loanName || !loanType || !principalAmount || !interestRate || !tenureMonths || !lender || !startDate) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
+
+    // Calculate accurate EMI if not provided
+    const calculatedEMI = emiAmount || calculateEMI(principalAmount, interestRate, tenureMonths);
 
     // Calculate end date
     const start = new Date(startDate);
@@ -100,7 +153,7 @@ export async function POST(request: NextRequest) {
         principalAmount: parseFloat(principalAmount),
         interestRate: parseFloat(interestRate),
         tenureMonths: parseInt(tenureMonths),
-        emiAmount: parseFloat(emiAmount),
+        emiAmount: calculatedEMI,
         lender,
         loanAccountNumber,
         startDate: new Date(startDate),
@@ -111,6 +164,8 @@ export async function POST(request: NextRequest) {
         insurance: insurance ? parseFloat(insurance) : null,
         prepaymentCharges: prepaymentCharges ? parseFloat(prepaymentCharges) : null,
         description,
+        notificationEmail,
+        reminderDays: reminderDays || 3,
         userId,
       },
     });
@@ -141,41 +196,28 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to generate EMI schedule
+// Helper function to generate EMI schedule using improved calculations
 async function generateEMISchedule(loanId: string, loan: any, userId: string) {
   const { principalAmount, interestRate, tenureMonths, emiAmount, startDate } = loan;
-  const monthlyRate = interestRate / 12 / 100;
-  let remainingPrincipal = principalAmount;
-
-  const emiPayments = [];
-
-  for (let emiNumber = 1; emiNumber <= tenureMonths; emiNumber++) {
+  
+  // Use the improved EMI schedule calculation
+  const emiDetails = calculateEMISchedule(principalAmount, interestRate, tenureMonths);
+  
+  const emiPayments = emiDetails.monthlyBreakdown.map((breakdown, index) => {
     const dueDate = new Date(startDate);
-    dueDate.setMonth(dueDate.getMonth() + emiNumber - 1);
+    dueDate.setMonth(dueDate.getMonth() + index);
 
-    // Calculate interest and principal components
-    const interestAmount = remainingPrincipal * monthlyRate;
-    const principalComponent = emiAmount - interestAmount;
-    
-    // Ensure we don't have negative principal in the last EMI
-    const adjustedPrincipalComponent = Math.min(principalComponent, remainingPrincipal);
-    const adjustedInterestAmount = emiAmount - adjustedPrincipalComponent;
-
-    emiPayments.push({
+    return {
       loanId,
-      emiNumber,
+      emiNumber: breakdown.month,
       dueDate,
-      emiAmount,
-      principalAmount: adjustedPrincipalComponent,
-      interestAmount: adjustedInterestAmount,
+      emiAmount: breakdown.emiAmount,
+      principalAmount: breakdown.principalAmount,
+      interestAmount: breakdown.interestAmount,
+      remainingPrincipal: breakdown.remainingPrincipal,
       userId,
-    });
-
-    remainingPrincipal -= adjustedPrincipalComponent;
-    
-    // Break if principal is fully paid
-    if (remainingPrincipal <= 0) break;
-  }
+    };
+  });
 
   // Create all EMI records
   await (prisma as any).eMIPayment.createMany({

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 
 interface FeatureRequest {
@@ -112,18 +112,18 @@ export default function AdminFeatureRequests() {
 
   const statusColors = {
     'submitted': 'bg-gray-100 text-gray-800',
-    'reviewing': 'bg-yellow-100 text-yellow-800',
-    'approved': 'bg-blue-100 text-blue-800',
-    'planned': 'bg-indigo-100 text-indigo-800',
-    'in-progress': 'bg-purple-100 text-purple-800',
-    'completed': 'bg-green-100 text-green-800',
-    'declined': 'bg-red-100 text-red-800'
+    'reviewing': 'bg-yellow-100 text-gray-700',
+    'approved': 'bg-blue-100 text-gray-700',
+    'planned': 'bg-indigo-100 text-gray-700',
+    'in-progress': 'bg-purple-100 text-gray-700',
+    'completed': 'bg-green-100 text-gray-700',
+    'declined': 'bg-red-100 text-gray-700'
   }
 
   const priorityColors = {
-    'low': 'text-green-600',
-    'medium': 'text-yellow-600',
-    'high': 'text-red-600'
+    'low': 'text-gray-700',
+    'medium': 'text-gray-700',
+    'high': 'text-gray-700'
   }
 
   if (!isAdmin) {
@@ -209,7 +209,7 @@ export default function AdminFeatureRequests() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          request.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          request.isPublic ? 'bg-green-100 text-gray-700' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {request.isPublic ? 'Public' : 'Private'}
                         </span>
@@ -217,7 +217,7 @@ export default function AdminFeatureRequests() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => openModal(request)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-gray-700 hover:text-gray-700"
                         >
                           Edit
                         </button>

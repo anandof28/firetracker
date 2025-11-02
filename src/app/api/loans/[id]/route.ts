@@ -1,6 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import {
+    calculateEMIEndDate,
+    calculateNextEMIDue,
+    calculatePendingAmounts,
+    calculateTimeBasedCompletion
+} from '@/lib/emi-calculator';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
@@ -36,15 +42,49 @@ export async function GET(
 
     // Calculate loan statistics
     const totalEmisPaid = loan.emiPayments.filter((emi: any) => emi.status === 'paid').length;
-    const nextEmiDue = loan.emiPayments.find((emi: any) => emi.status === 'pending')?.dueDate || null;
-    const completionPercentage = loan.tenureMonths > 0 ? 
-      ((loan.tenureMonths - loan.remainingEmis) / loan.tenureMonths) * 100 : 0;
+    
+    // Calculate completion based ONLY on time elapsed from loan start date
+    const startDate = new Date(loan.startDate);
+    const currentDate = new Date();
+    
+    const { completionPercentage, monthsElapsed } = calculateTimeBasedCompletion(
+      startDate,
+      loan.tenureMonths,
+      currentDate
+    );
+
+    // Calculate remaining EMIs based on time elapsed
+    const remainingEMIsTimeBase = Math.max(0, loan.tenureMonths - Math.floor(monthsElapsed));
+    
+    // Calculate EMI end date
+    const emiEndDate = calculateEMIEndDate(startDate, loan.tenureMonths);
+    
+    // Calculate next EMI due date
+    const nextEmiDue = calculateNextEMIDue(startDate, monthsElapsed, loan.tenureMonths);
+    
+    // Calculate individual pending amounts
+    const pendingAmounts = calculatePendingAmounts(
+      loan.principalAmount, // Original principal amount
+      loan.interestRate,
+      loan.tenureMonths, // Total tenure
+      monthsElapsed // Months elapsed since loan start
+    );
+    
+    // Calculate total outstanding using the accurate remaining principal
+    const totalOutstanding = pendingAmounts.totalPending;
 
     const loanWithStats = {
       ...loan,
       totalEmisPaid,
       nextEmiDue,
       completionPercentage,
+      monthsElapsed,
+      remainingEmis: remainingEMIsTimeBase, // Override with time-based calculation
+      emiEndDate,
+      totalOutstanding, // New field with principal + interest
+      pendingPrincipal: pendingAmounts.pendingPrincipal,
+      pendingInterest: pendingAmounts.pendingInterest,
+      isOverdue: false, // Removed overdue logic as requested
     };
 
     return NextResponse.json(loanWithStats);
@@ -75,7 +115,9 @@ export async function PUT(
       insurance,
       prepaymentCharges,
       description,
-      isActive
+      isActive,
+      notificationEmail,
+      reminderDays
     } = body;
 
     // Check if loan exists and belongs to user
@@ -103,6 +145,8 @@ export async function PUT(
         prepaymentCharges: prepaymentCharges ? parseFloat(prepaymentCharges) : null,
         description,
         isActive: isActive !== undefined ? isActive : existingLoan.isActive,
+        notificationEmail,
+        reminderDays: reminderDays ? parseInt(reminderDays) : existingLoan.reminderDays,
         updatedAt: new Date(),
       },
       include: {

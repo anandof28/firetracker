@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 
 interface FeatureRequest {
@@ -75,18 +75,18 @@ export default function FeatureRequests() {
 
   const statusColors = {
     'submitted': 'bg-gray-100 text-gray-800',
-    'reviewing': 'bg-yellow-100 text-yellow-800',
-    'approved': 'bg-blue-100 text-blue-800',
-    'planned': 'bg-indigo-100 text-indigo-800',
-    'in-progress': 'bg-purple-100 text-purple-800',
-    'completed': 'bg-green-100 text-green-800',
-    'declined': 'bg-red-100 text-red-800'
+    'reviewing': 'bg-yellow-100 text-gray-700',
+    'approved': 'bg-blue-100 text-gray-700',
+    'planned': 'bg-indigo-100 text-gray-700',
+    'in-progress': 'bg-purple-100 text-gray-700',
+    'completed': 'bg-green-100 text-gray-700',
+    'declined': 'bg-red-100 text-gray-700'
   }
 
   const priorityColors = {
-    'low': 'text-green-600',
-    'medium': 'text-yellow-600',
-    'high': 'text-red-600'
+    'low': 'text-gray-700',
+    'medium': 'text-gray-700',
+    'high': 'text-gray-700'
   }
 
   const filteredFeatures = features
@@ -189,7 +189,7 @@ export default function FeatureRequests() {
                 onClick={() => setActiveTab('browse')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'browse'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-blue-500 text-gray-700'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -199,7 +199,7 @@ export default function FeatureRequests() {
                 onClick={() => setActiveTab('submit')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'submit'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-blue-500 text-gray-700'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -227,7 +227,7 @@ export default function FeatureRequests() {
                           onClick={() => setSelectedCategory(category.value)}
                           className={`px-3 py-1 rounded-full text-sm font-medium ${
                             selectedCategory === category.value
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-blue-100 text-gray-700'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -287,7 +287,7 @@ export default function FeatureRequests() {
                                 {feature.estimatedTimeline && (
                                   <>
                                     <span>•</span>
-                                    <span className="text-blue-600 font-medium">ETA: {feature.estimatedTimeline}</span>
+                                    <span className="text-gray-700 font-medium">ETA: {feature.estimatedTimeline}</span>
                                   </>
                                 )}
                               </div>
@@ -444,11 +444,11 @@ export default function FeatureRequests() {
 
         {/* Guidelines */}
         <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">Guidelines for Feature Requests</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">Guidelines for Feature Requests</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
-              <h4 className="font-medium text-blue-900 mb-2">✅ Good Requests</h4>
-              <ul className="space-y-1 text-blue-800">
+              <h4 className="font-medium text-gray-700 mb-2">✅ Good Requests</h4>
+              <ul className="space-y-1 text-gray-700">
                 <li>• Clear, specific descriptions</li>
                 <li>• Explain the business value</li>
                 <li>• Provide use cases</li>
@@ -456,8 +456,8 @@ export default function FeatureRequests() {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-blue-900 mb-2">📝 What Happens Next</h4>
-              <ul className="space-y-1 text-blue-800">
+              <h4 className="font-medium text-gray-700 mb-2">📝 What Happens Next</h4>
+              <ul className="space-y-1 text-gray-700">
                 <li>• Community votes on requests</li>
                 <li>• Team reviews popular requests</li>
                 <li>• Requests get prioritized in roadmap</li>

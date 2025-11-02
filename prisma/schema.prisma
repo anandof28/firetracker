@@ -24,20 +24,22 @@ model User {
   gold            Gold[]
   loans           Loan[]
   mutualFunds     MutualFund[]
+  prepayments     Prepayment[]
   transactions    Transaction[]
 
   @@map("users")
 }
 
 model Account {
-  id           String        @id @default(uuid())
-  name         String
-  balance      Float
-  createdAt    DateTime      @default(now())
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fds          FD[]
-  transactions Transaction[]
+  id            String        @id @default(uuid())
+  name          String
+  accountNumber String?
+  balance       Float
+  createdAt     DateTime      @default(now())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fds           FD[]
+  transactions  Transaction[]
 
   @@index([userId])
   @@map("accounts")
@@ -222,10 +224,13 @@ model Loan {
   prepaymentCharges Float?
   isActive          Boolean      @default(true)
   description       String?
+  notificationEmail String?
+  reminderDays      Int          @default(3)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   userId            String
   emiPayments       EMIPayment[]
+  prepayments       Prepayment[]
   user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -235,26 +240,27 @@ model Loan {
 }
 
 model EMIPayment {
-  id               String    @id @default(uuid())
-  loanId           String
-  emiNumber        Int
-  dueDate          DateTime
-  paidDate         DateTime?
-  emiAmount        Float
-  principalAmount  Float
-  interestAmount   Float
-  amountPaid       Float?
-  paymentMode      String?
-  transactionId    String?
-  status           String    @default("pending")
-  lateFee          Float?
-  prepaymentAmount Float?
-  description      String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  userId           String
-  loan             Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String    @id @default(uuid())
+  loanId             String
+  emiNumber          Int
+  dueDate            DateTime
+  paidDate           DateTime?
+  emiAmount          Float
+  principalAmount    Float
+  interestAmount     Float
+  remainingPrincipal Float
+  amountPaid         Float?
+  paymentMode        String?
+  transactionId      String?
+  status             String    @default("pending")
+  lateFee            Float?
+  prepaymentAmount   Float?
+  description        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  userId             String
+  loan               Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([loanId, emiNumber])
   @@index([userId])
@@ -262,6 +268,30 @@ model EMIPayment {
   @@index([status])
   @@index([dueDate])
   @@map("emi_payments")
+}
+
+model Prepayment {
+  id                  String   @id @default(uuid())
+  loanId              String
+  amount              Float
+  prepaymentDate      DateTime @default(now())
+  principalReduction  Float
+  interestSavings     Float
+  tenureReduction     Int      @default(0)
+  newRemainingTenure  Int
+  newEmiAmount        Float?
+  prepaymentType      String   @default("principal") // principal, tenure_reduction, both
+  description         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  userId              String
+  loan                Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([loanId])
+  @@index([prepaymentDate])
+  @@map("prepayments")
 }
 
 model FeatureRequest {

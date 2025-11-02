@@ -20,7 +20,7 @@ const guideSteps: GuideStep[] = [
     title: 'Welcome to Fire Tracker! 🎉',
     description: 'Your personal finance management platform is ready. Let\'s take a quick tour to get you started.',
     icon: (
-      <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     )
@@ -30,7 +30,7 @@ const guideSteps: GuideStep[] = [
     title: 'Start with Bank Accounts 🏦',
     description: 'Add your bank accounts to track balances and transactions. You can connect multiple accounts from different banks.',
     icon: (
-      <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>
     ),
@@ -44,7 +44,7 @@ const guideSteps: GuideStep[] = [
     title: 'Track Transactions 💳',
     description: 'Record your income and expenses with categories. This helps you understand your spending patterns and manage budgets.',
     icon: (
-      <svg className="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
       </svg>
     ),
@@ -58,7 +58,7 @@ const guideSteps: GuideStep[] = [
     title: 'Manage Investments 📈',
     description: 'Add your fixed deposits, gold investments, and mutual funds. Track maturity dates, interest rates, and performance.',
     icon: (
-      <svg className="w-12 h-12 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
       </svg>
     ),
@@ -72,7 +72,7 @@ const guideSteps: GuideStep[] = [
     title: 'Set Budget Goals 🎯',
     description: 'Create budgets for different categories and get alerts when you\'re approaching limits. Stay on top of your financial goals.',
     icon: (
-      <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
@@ -86,7 +86,7 @@ const guideSteps: GuideStep[] = [
     title: 'Quick Start with Sample Data 🚀',
     description: 'Want to explore features immediately? Import sample portfolio data to see how everything works together.',
     icon: (
-      <svg className="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
       </svg>
     ),
@@ -114,19 +114,29 @@ export default function FirstTimeUserGuide() {
   const [showTips, setShowTips] = useState(false)
   const [currentTip, setCurrentTip] = useState(0)
 
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('FirstTimeUserGuide mounted', { isLoaded, user: !!user, isVisible })
+  }, [])
+
   useEffect(() => {
     if (!isLoaded) return
 
     // Check if user has seen the guide before
-    const hasSeenGuide = localStorage.getItem('fire-tracker-guide-completed')
-    
-    if (!hasSeenGuide && user) {
-      // Show guide after a brief delay for better UX
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 1500)
+    try {
+      const hasSeenGuide = localStorage.getItem('fire-tracker-guide-completed')
       
-      return () => clearTimeout(timer)
+      if (!hasSeenGuide && user) {
+        // Show guide after a brief delay for better UX
+        const timer = setTimeout(() => {
+          setIsVisible(true)
+        }, 800)
+        
+        return () => clearTimeout(timer)
+      }
+    } catch (error) {
+      // If localStorage is not available, don't show guide
+      console.error('localStorage error:', error)
     }
   }, [user, isLoaded])
 
@@ -139,6 +149,19 @@ export default function FirstTimeUserGuide() {
       return () => clearInterval(interval)
     }
   }, [showTips])
+
+  // Add escape key listener to close guide
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isVisible) {
+        console.log('Escape pressed, closing guide')
+        handleSkip()
+      }
+    }
+
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isVisible])
 
   const handleNext = () => {
     if (currentStep < guideSteps.length - 1) {
@@ -167,8 +190,14 @@ export default function FirstTimeUserGuide() {
   }
 
   const handleSkip = () => {
+    console.log('Skipping guide')
     setIsCompleted(true)
-    localStorage.setItem('fire-tracker-guide-completed', 'true')
+    try {
+      localStorage.setItem('fire-tracker-guide-completed', 'true')
+      console.log('Guide marked as completed in localStorage')
+    } catch (error) {
+      console.error('Error saving to localStorage:', error)
+    }
     setIsVisible(false)
   }
 
@@ -185,13 +214,43 @@ export default function FirstTimeUserGuide() {
       // Show a small help button for users to reopen the guide
       <button
         onClick={resetGuide}
-        className="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-all duration-200 z-40 group"
         title="Show Getting Started Guide"
+        className="group"
+        style={{
+          position: 'fixed',
+          bottom: '16px',
+          right: '16px',
+          backgroundColor: '#5271FF',
+          color: '#FFFFFF',
+          padding: '14px',
+          borderRadius: '50%',
+          boxShadow: '0 4px 16px rgba(82, 113, 255, 0.35)',
+          transition: 'all 200ms ease',
+          zIndex: 40,
+          border: 'none',
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#3E5EEC'
+          e.currentTarget.style.transform = 'scale(1.1) translateY(-2px)'
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(82, 113, 255, 0.45)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '#5271FF'
+          e.currentTarget.style.transform = 'scale(1) translateY(0)'
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(82, 113, 255, 0.35)'
+        }}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        <span 
+          className="absolute bottom-full right-0 mb-2 px-3 py-1 text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+          style={{
+            backgroundColor: '#1A1F2C',
+            color: '#FFFFFF',
+          }}
+        >
           Getting Started Guide
         </span>
       </button>
@@ -201,27 +260,115 @@ export default function FirstTimeUserGuide() {
   const currentStepData = guideSteps[currentStep]
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div 
+      onClick={(e) => {
+        // Close when clicking outside the modal
+        if (e.target === e.currentTarget) {
+          handleSkip()
+        }
+      }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.6)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        zIndex: 9999,
+      }}
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '16px',
+        maxWidth: '640px',
+        width: '100%',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
+        position: 'relative',
+      }}>
         {!isCompleted ? (
           <div className="p-8">
+            {/* Close Button */}
+            <button
+              onClick={handleSkip}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: '#F3F4F6',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 180ms ease',
+                color: '#68738A',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#E5E7EB'
+                e.currentTarget.style.color = '#1A1F2C'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#F3F4F6'
+                e.currentTarget.style.color = '#68738A'
+              }}
+              title="Close guide"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
             {/* Progress Bar */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-600">
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#68738A' }}>
                   Step {currentStep + 1} of {guideSteps.length}
                 </span>
                 <button
                   onClick={handleSkip}
-                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                  style={{
+                    fontSize: '14px',
+                    color: '#68738A',
+                    textDecoration: 'underline',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#1A1F2C'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#68738A'
+                  }}
                 >
                   Skip Guide
                 </button>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div style={{
+                width: '100%',
+                backgroundColor: '#E5E7EB',
+                borderRadius: '9999px',
+                height: '8px',
+                overflow: 'hidden',
+              }}>
                 <div
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentStep + 1) / guideSteps.length) * 100}%` }}
+                  style={{
+                    background: 'linear-gradient(135deg, #5271FF 0%, #7C93FF 100%)',
+                    height: '8px',
+                    borderRadius: '9999px',
+                    transition: 'all 300ms ease',
+                    width: `${((currentStep + 1) / guideSteps.length) * 100}%`,
+                  }}
                 />
               </div>
             </div>
@@ -231,10 +378,22 @@ export default function FirstTimeUserGuide() {
               <div className="mb-4 flex justify-center">
                 {currentStepData.icon}
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 style={{ 
+                fontSize: '28px', 
+                fontWeight: 700, 
+                color: '#1A1F2C', 
+                marginBottom: '16px',
+                letterSpacing: '-0.02em',
+              }}>
                 {currentStepData.title}
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p style={{ 
+                fontSize: '16px', 
+                color: '#68738A', 
+                lineHeight: 1.7,
+                maxWidth: '500px',
+                margin: '0 auto',
+              }}>
                 {currentStepData.description}
               </p>
             </div>
@@ -244,8 +403,27 @@ export default function FirstTimeUserGuide() {
               <div className="mb-6 text-center">
                 <a
                   href={currentStepData.action.href}
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
                   onClick={handleSkip} // Close guide when action is taken
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '12px 24px',
+                    background: 'linear-gradient(135deg, #5271FF 0%, #7C93FF 100%)',
+                    color: '#FFFFFF',
+                    fontWeight: 600,
+                    borderRadius: '10px',
+                    transition: 'all 200ms ease',
+                    textDecoration: 'none',
+                    boxShadow: '0 4px 12px rgba(82, 113, 255, 0.3)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(82, 113, 255, 0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(82, 113, 255, 0.3)'
+                  }}
                 >
                   {currentStepData.action.text}
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,7 +438,29 @@ export default function FirstTimeUserGuide() {
               <button
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
-                className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px 16px',
+                  color: '#68738A',
+                  fontWeight: 500,
+                  opacity: currentStep === 0 ? 0.4 : 1,
+                  cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
+                  transition: 'all 180ms ease',
+                  background: 'none',
+                  border: 'none',
+                  borderRadius: '8px',
+                }}
+                onMouseEnter={(e) => {
+                  if (currentStep !== 0) {
+                    e.currentTarget.style.color = '#1A1F2C'
+                    e.currentTarget.style.backgroundColor = '#F3F4F6'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#68738A'
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -273,20 +473,49 @@ export default function FirstTimeUserGuide() {
                   <button
                     key={index}
                     onClick={() => setCurrentStep(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                      index === currentStep
-                        ? 'bg-blue-600 scale-125'
+                    style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      transition: 'all 200ms ease',
+                      backgroundColor: index === currentStep
+                        ? '#5271FF'
                         : index < currentStep
-                        ? 'bg-blue-300'
-                        : 'bg-gray-300'
-                    }`}
+                        ? '#A5B4FC'
+                        : '#D1D5DB',
+                      transform: index === currentStep ? 'scale(1.25)' : 'scale(1)',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
                   />
                 ))}
               </div>
 
               <button
                 onClick={handleNext}
-                className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '10px 20px',
+                  backgroundColor: '#5271FF',
+                  color: '#FFFFFF',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  transition: 'all 180ms ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(82, 113, 255, 0.25)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#3E5EEC'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(82, 113, 255, 0.35)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#5271FF'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(82, 113, 255, 0.25)'
+                }}
               >
                 {currentStep === guideSteps.length - 1 ? 'Get Started' : 'Next'}
                 <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,21 +527,55 @@ export default function FirstTimeUserGuide() {
         ) : showTips ? (
           <div className="p-8 text-center">
             <div className="mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #45B97C 0%, #63C991 100%)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                boxShadow: '0 4px 16px rgba(69, 185, 124, 0.3)',
+              }}>
+                <svg className="w-8 h-8" fill="none" stroke="#FFFFFF" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 style={{ 
+                fontSize: '28px', 
+                fontWeight: 700, 
+                color: '#1A1F2C', 
+                marginBottom: '16px',
+                letterSpacing: '-0.02em',
+              }}>
                 You're All Set! 🎉
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p style={{ 
+                fontSize: '16px', 
+                color: '#68738A', 
+                marginBottom: '24px',
+              }}>
                 Here are some helpful tips to get the most out of Fire Tracker:
               </p>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 mb-6">
-              <p className="text-lg font-medium text-gray-800 transition-all duration-300">
+            <div style={{
+              background: 'linear-gradient(135deg, #E4E8FF 0%, #F5E6FF 100%)',
+              borderRadius: '12px',
+              padding: '24px',
+              marginBottom: '24px',
+              minHeight: '80px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <p style={{ 
+                fontSize: '16px', 
+                fontWeight: 500, 
+                color: '#1A1F2C',
+                transition: 'all 300ms ease',
+              }}>
                 {tips[currentTip]}
               </p>
             </div>
@@ -321,16 +584,38 @@ export default function FirstTimeUserGuide() {
               {tips.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentTip ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    transition: 'all 300ms ease',
+                    backgroundColor: index === currentTip ? '#5271FF' : '#D1D5DB',
+                  }}
                 />
               ))}
             </div>
 
             <button
               onClick={() => setIsVisible(false)}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200"
+              style={{
+                padding: '12px 32px',
+                background: 'linear-gradient(135deg, #5271FF 0%, #7C93FF 100%)',
+                color: '#FFFFFF',
+                fontWeight: 600,
+                borderRadius: '10px',
+                transition: 'all 200ms ease',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(82, 113, 255, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(82, 113, 255, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(82, 113, 255, 0.3)'
+              }}
             >
               Start Exploring
             </button>

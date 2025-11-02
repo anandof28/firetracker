@@ -284,18 +284,44 @@ export default function Header() {
   ]
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <header style={{
+      backgroundColor: '#FFFFFF',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+      borderBottom: '1px solid #E5E7EB',
+      position: 'sticky',
+      top: 0,
+      zIndex: 50,
+    }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">FT</span>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                background: 'linear-gradient(135deg, #5271FF 0%, #7C93FF 100%)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(82, 113, 255, 0.25)',
+              }}>
+                <span style={{ color: '#FFFFFF', fontWeight: 700, fontSize: '16px' }}>FT</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Fire Tracker</h1>
-                <p className="text-xs text-gray-500 -mt-1">Personal Finance</p>
+                <h1 style={{ 
+                  fontSize: '20px', 
+                  fontWeight: 700, 
+                  color: '#1A1F2C',
+                  letterSpacing: '-0.02em',
+                }}>Fire Tracker</h1>
+                <p style={{ 
+                  fontSize: '11px', 
+                  color: '#68738A',
+                  marginTop: '-2px',
+                  fontWeight: 500,
+                }}>Personal Finance</p>
               </div>
             </Link>
           </div>
@@ -304,17 +330,37 @@ export default function Header() {
           <SignedIn>
             <nav className="hidden lg:flex items-center space-x-1">
               {/* Core Navigation Items (most used) */}
-              {mainNavigation.slice(0, 4).map((item) => {
+              {mainNavigation.slice(0, 5).map((item) => {
                 const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
-                      isActive
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      transition: 'all 180ms ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      backgroundColor: isActive ? '#E4E8FF' : 'transparent',
+                      color: isActive ? '#5271FF' : '#68738A',
+                      border: isActive ? '1px solid #C7D2FE' : '1px solid transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = '#F3F4F6'
+                        e.currentTarget.style.color = '#1A1F2C'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.color = '#68738A'
+                      }
+                    }}
                   >
                     {item.icon}
                     <span className="hidden xl:inline">{item.name}</span>
@@ -322,45 +368,87 @@ export default function Header() {
                 )
               })}
 
-              {/* Loans & EMI - Direct Link */}
-              <Link
-                href="/loans"
-                className={`px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
-                  pathname === '/loans' || pathname === '/emis'
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span className="hidden xl:inline">Loans</span>
-              </Link>
-
               {/* All Other Items in One Dropdown */}
               <div className="relative" ref={moreDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setIsMoreDropdownOpen(!isMoreDropdownOpen)}
-                  className={`px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${
-                    [...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    transition: 'all 180ms ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: [...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)
+                      ? '#E4E8FF'
+                      : 'transparent',
+                    color: [...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)
+                      ? '#5271FF'
+                      : '#68738A',
+                    border: [...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)
+                      ? '1px solid #C7D2FE'
+                      : '1px solid transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (![...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)) {
+                      e.currentTarget.style.backgroundColor = '#F3F4F6'
+                      e.currentTarget.style.color = '#1A1F2C'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (![...investmentItems, ...toolsItems, ...supportItems].some(item => pathname === item.href)) {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = '#68738A'
+                    }
+                  }}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                   <span className="hidden xl:inline">More</span>
-                  <svg className={`w-4 h-4 transition-transform ${isMoreDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg 
+                    className="w-4 h-4" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                    style={{
+                      transition: 'transform 180ms ease',
+                      transform: isMoreDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 {isMoreDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200 max-h-96 overflow-y-auto">
+                  <div style={{
+                    position: 'absolute',
+                    right: 0,
+                    marginTop: '8px',
+                    width: '280px',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06)',
+                    padding: '8px',
+                    zIndex: 50,
+                    border: '1px solid #E5E7EB',
+                    maxHeight: '520px',
+                    overflowY: 'auto',
+                  }}>
                     {/* Investments Section */}
-                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Investments</div>
+                    <div style={{ 
+                      padding: '8px 12px 4px 12px', 
+                      fontSize: '11px', 
+                      fontWeight: 600, 
+                      color: '#68738A',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      💰 Investments
+                    </div>
                     {investmentItems.map((item) => {
                       const isActive = pathname === item.href
                       return (
@@ -368,11 +456,29 @@ export default function Header() {
                           key={item.name}
                           href={item.href}
                           onClick={() => setIsMoreDropdownOpen(false)}
-                          className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          style={{
+                            padding: '10px 12px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            transition: 'all 150ms ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            borderRadius: '8px',
+                            marginBottom: '2px',
+                            backgroundColor: isActive ? '#E4E8FF' : 'transparent',
+                            color: isActive ? '#5271FF' : '#1A1F2C',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = '#F9FAFB'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }
+                          }}
                         >
                           {item.icon}
                           <span>{item.name}</span>
@@ -381,10 +487,19 @@ export default function Header() {
                     })}
                     
                     {/* Divider */}
-                    <div className="border-t border-gray-100 my-1"></div>
+                    <div style={{ borderTop: '1px solid #E5E7EB', margin: '8px 0' }}></div>
                     
                     {/* Tools Section */}
-                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tools</div>
+                    <div style={{ 
+                      padding: '8px 12px 4px 12px', 
+                      fontSize: '11px', 
+                      fontWeight: 600, 
+                      color: '#68738A',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      🛠️ Tools & Features
+                    </div>
                     {toolsItems.map((item) => {
                       const isActive = pathname === item.href
                       return (
@@ -392,11 +507,29 @@ export default function Header() {
                           key={item.name}
                           href={item.href}
                           onClick={() => setIsMoreDropdownOpen(false)}
-                          className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          style={{
+                            padding: '10px 12px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            transition: 'all 150ms ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            borderRadius: '8px',
+                            marginBottom: '2px',
+                            backgroundColor: isActive ? '#E4E8FF' : 'transparent',
+                            color: isActive ? '#5271FF' : '#1A1F2C',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = '#F9FAFB'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }
+                          }}
                         >
                           {item.icon}
                           <span>{item.name}</span>
@@ -405,10 +538,19 @@ export default function Header() {
                     })}
                     
                     {/* Divider */}
-                    <div className="border-t border-gray-100 my-1"></div>
+                    <div style={{ borderTop: '1px solid #E5E7EB', margin: '8px 0' }}></div>
                     
                     {/* Support Section */}
-                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">Support</div>
+                    <div style={{ 
+                      padding: '8px 12px 4px 12px', 
+                      fontSize: '11px', 
+                      fontWeight: 600, 
+                      color: '#68738A',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      💬 Help & Support
+                    </div>
                     {supportItems.map((item) => {
                       const isActive = pathname === item.href
                       return (
@@ -416,11 +558,29 @@ export default function Header() {
                           key={item.name}
                           href={item.href}
                           onClick={() => setIsMoreDropdownOpen(false)}
-                          className={`px-4 py-2 text-sm transition-colors duration-200 flex items-center space-x-2 ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-100'
-                          }`}
+                          style={{
+                            padding: '10px 12px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            transition: 'all 150ms ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            borderRadius: '8px',
+                            marginBottom: '2px',
+                            backgroundColor: isActive ? '#E4E8FF' : 'transparent',
+                            color: isActive ? '#5271FF' : '#1A1F2C',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = '#F9FAFB'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isActive) {
+                              e.currentTarget.style.backgroundColor = 'transparent'
+                            }
+                          }}
                         >
                           {item.icon}
                           <span>{item.name}</span>
@@ -439,7 +599,30 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                <button 
+                  style={{
+                    backgroundColor: '#5271FF',
+                    color: '#FFFFFF',
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    transition: 'all 180ms ease',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(82, 113, 255, 0.2)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#3E5EEC'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(82, 113, 255, 0.3)'
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#5271FF'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(82, 113, 255, 0.2)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
                   Sign In
                 </button>
               </SignInButton>
@@ -449,7 +632,7 @@ export default function Header() {
               <UserButton 
                 appearance={{
                   elements: {
-                    avatarBox: "w-8 h-8"
+                    avatarBox: "w-9 h-9 rounded-lg shadow-sm"
                   }
                 }}
                 userProfileMode="modal"
@@ -491,7 +674,7 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                         isActive
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          ? 'bg-blue-100 text-gray-700 border border-blue-200'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >
@@ -502,24 +685,6 @@ export default function Header() {
                     </Link>
                   )
                 })}
-                
-                {/* Loans Link */}
-                <Link
-                  href="/loans"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                    pathname === '/loans' || pathname === '/emis'
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span>Loans & EMI</span>
-                  </div>
-                </Link>
               </div>
               
               {/* Investments Section */}
@@ -534,7 +699,7 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                         isActive
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          ? 'bg-blue-100 text-gray-700 border border-blue-200'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >
@@ -559,7 +724,7 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                         isActive
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          ? 'bg-blue-100 text-gray-700 border border-blue-200'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >
@@ -584,7 +749,7 @@ export default function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                         isActive
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                          ? 'bg-blue-100 text-gray-700 border border-blue-200'
                           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                     >

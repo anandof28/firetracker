@@ -24,31 +24,31 @@ export default function FDNotification({ maturedFDs, approachingMaturityFDs }: F
   const notificationStyles = hasMatured ? {
     bgColor: 'bg-orange-50',
     borderColor: 'border-orange-400',
-    iconColor: 'text-orange-400',
-    titleColor: 'text-orange-800',
-    textColor: 'text-orange-700',
-    buttonColor: 'text-orange-600 hover:text-orange-800',
-    buttonIconColor: 'text-orange-400 hover:text-orange-600',
+    iconColor: 'text-gray-700',
+    titleColor: 'text-gray-700',
+    textColor: 'text-gray-700',
+    buttonColor: 'text-gray-700 hover:text-gray-700',
+    buttonIconColor: 'text-gray-700 hover:text-gray-700',
     sectionBg: 'bg-orange-100',
     sectionBorder: 'border-orange-200',
-    sectionText: 'text-orange-800',
+    sectionText: 'text-gray-700',
     badgeBg: 'bg-orange-100',
-    badgeText: 'text-orange-800',
-    highlightText: 'text-orange-600'
+    badgeText: 'text-gray-700',
+    highlightText: 'text-gray-700'
   } : {
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-400',
-    iconColor: 'text-yellow-400',
-    titleColor: 'text-yellow-800',
-    textColor: 'text-yellow-700',
-    buttonColor: 'text-yellow-600 hover:text-yellow-800',
-    buttonIconColor: 'text-yellow-400 hover:text-yellow-600',
+    iconColor: 'text-gray-700',
+    titleColor: 'text-gray-700',
+    textColor: 'text-gray-700',
+    buttonColor: 'text-gray-700 hover:text-gray-700',
+    buttonIconColor: 'text-gray-700 hover:text-gray-700',
     sectionBg: 'bg-yellow-100',
     sectionBorder: 'border-yellow-200',
-    sectionText: 'text-yellow-800',
+    sectionText: 'text-gray-700',
     badgeBg: 'bg-yellow-100',
-    badgeText: 'text-yellow-800',
-    highlightText: 'text-yellow-600'
+    badgeText: 'text-gray-700',
+    highlightText: 'text-gray-700'
   }
 
   return (
@@ -112,7 +112,7 @@ export default function FDNotification({ maturedFDs, approachingMaturityFDs }: F
                 {hasMatured && (
                   <>
                     <div className="px-4 py-3 bg-red-100 border-b border-red-200">
-                      <h4 className="text-sm font-medium text-red-800">
+                      <h4 className="text-sm font-medium text-gray-700">
                         Overdue FDs ({maturedFDs.length})
                       </h4>
                     </div>
@@ -125,7 +125,7 @@ export default function FDNotification({ maturedFDs, approachingMaturityFDs }: F
                                 <span className="text-sm font-medium text-gray-900">
                                   ₹{fd.amount.toFixed(2)}
                                 </span>
-                                <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                <span className="text-xs bg-red-100 text-gray-700 px-2 py-1 rounded">
                                   {fd.rate}%
                                 </span>
                                 <span className="text-xs text-gray-500">
@@ -134,13 +134,13 @@ export default function FDNotification({ maturedFDs, approachingMaturityFDs }: F
                               </div>
                               <div className="mt-1 text-xs text-gray-600">
                                 Matured: {formatDateForDisplay(fd.endDate)}
-                                <span className="text-red-600 font-medium ml-2">
+                                <span className="text-gray-700 font-medium ml-2">
                                   ({fd.daysPastMaturity} day{fd.daysPastMaturity > 1 ? 's' : ''} overdue)
                                 </span>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-sm font-medium text-green-600">
+                              <div className="text-sm font-medium text-gray-700">
                                 ₹{calculateMaturityAmount(fd.amount, fd.rate, fd.startDate, fd.endDate).toFixed(2)}
                               </div>
                               <div className="text-xs text-gray-500">Maturity Value</div>
@@ -184,7 +184,7 @@ export default function FDNotification({ maturedFDs, approachingMaturityFDs }: F
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-sm font-medium text-green-600">
+                              <div className="text-sm font-medium text-gray-700">
                                 ₹{calculateMaturityAmount(fd.amount, fd.rate, fd.startDate, fd.endDate).toFixed(2)}
                               </div>
                               <div className="text-xs text-gray-500">Maturity Value</div>

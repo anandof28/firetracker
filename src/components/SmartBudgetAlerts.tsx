@@ -223,17 +223,17 @@ export default function SmartBudgetAlerts() {
       <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-red-700 text-sm font-medium">Budget Alerts Error</p>
-              <p className="text-red-600 text-xs mt-1">{error}</p>
+              <p className="text-gray-700 text-sm font-medium">Budget Alerts Error</p>
+              <p className="text-gray-700 text-xs mt-1">{error}</p>
             </div>
           </div>
           <button
             onClick={fetchBudgetAlerts}
-            className="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-100"
+            className="text-gray-700 hover:text-gray-700 p-1 rounded-md hover:bg-red-100"
             title="Retry loading budget alerts"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +244,7 @@ export default function SmartBudgetAlerts() {
         <div className="mt-2">
           <Link 
             href="/budgets" 
-            className="text-red-600 hover:text-red-700 text-sm font-medium hover:underline"
+            className="text-gray-700 hover:text-gray-700 text-sm font-medium hover:underline"
           >
             Go to Budgets page →
           </Link>
@@ -266,21 +266,21 @@ export default function SmartBudgetAlerts() {
         {error && error.startsWith('Warning:') && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
             <div className="flex items-center space-x-2">
-              <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              <p className="text-yellow-700 text-sm">{error}</p>
+              <p className="text-gray-700 text-sm">{error}</p>
             </div>
           </div>
         )}
         
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <h2 className="text-lg font-semibold text-gray-800">Budget Status</h2>
-            <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+            <span className="bg-green-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
               All Good
             </span>
           </div>
@@ -296,7 +296,7 @@ export default function SmartBudgetAlerts() {
             </button>
             <Link 
               href="/budgets" 
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline"
+              className="text-gray-700 hover:text-gray-700 text-sm font-medium hover:underline"
             >
               Manage Budgets →
             </Link>
@@ -308,13 +308,13 @@ export default function SmartBudgetAlerts() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-red-700 text-sm font-medium">Over Budget</span>
+                <span className="text-gray-700 text-sm font-medium">Over Budget</span>
               </div>
-              <p className="text-red-600 text-lg font-bold mt-1">
+              <p className="text-gray-700 text-lg font-bold mt-1">
                 {allBudgets.filter(a => a.status === 'over').length}
               </p>
               {allBudgets.filter(a => a.status === 'over').length > 0 && (
-                <p className="text-red-500 text-xs mt-1">
+                <p className="text-gray-700 text-xs mt-1">
                   {allBudgets.filter(a => a.status === 'over').map(b => b.budget.category).join(', ')}
                 </p>
               )}
@@ -322,13 +322,13 @@ export default function SmartBudgetAlerts() {
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                <span className="text-orange-700 text-sm font-medium">Near Limit</span>
+                <span className="text-gray-700 text-sm font-medium">Near Limit</span>
               </div>
-              <p className="text-orange-600 text-lg font-bold mt-1">
+              <p className="text-gray-700 text-lg font-bold mt-1">
                 {allBudgets.filter(a => a.status === 'warning').length}
               </p>
               {allBudgets.filter(a => a.status === 'warning').length > 0 && (
-                <p className="text-orange-500 text-xs mt-1">
+                <p className="text-gray-700 text-xs mt-1">
                   {allBudgets.filter(a => a.status === 'warning').map(b => b.budget.category).join(', ')}
                 </p>
               )}
@@ -336,13 +336,13 @@ export default function SmartBudgetAlerts() {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="text-yellow-700 text-sm font-medium">Approaching</span>
+                <span className="text-gray-700 text-sm font-medium">Approaching</span>
               </div>
-              <p className="text-yellow-600 text-lg font-bold mt-1">
+              <p className="text-gray-700 text-lg font-bold mt-1">
                 {allBudgets.filter(a => a.status === 'approaching').length}
               </p>
               {allBudgets.filter(a => a.status === 'approaching').length > 0 && (
-                <p className="text-yellow-500 text-xs mt-1">
+                <p className="text-gray-700 text-xs mt-1">
                   {allBudgets.filter(a => a.status === 'approaching').map(b => b.budget.category).join(', ')}
                 </p>
               )}
@@ -350,13 +350,13 @@ export default function SmartBudgetAlerts() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-green-700 text-sm font-medium">On Track</span>
+                <span className="text-gray-700 text-sm font-medium">On Track</span>
               </div>
-              <p className="text-green-600 text-lg font-bold mt-1">
+              <p className="text-gray-700 text-lg font-bold mt-1">
                 {allBudgets.filter(a => a.status === 'good').length}
               </p>
               {allBudgets.filter(a => a.status === 'good').length > 0 && (
-                <p className="text-green-500 text-xs mt-1">
+                <p className="text-gray-700 text-xs mt-1">
                   {allBudgets.filter(a => a.status === 'good').map(b => b.budget.category).join(', ')}
                 </p>
               )}
@@ -366,12 +366,12 @@ export default function SmartBudgetAlerts() {
         
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-green-700 text-sm font-medium">All budgets are on track! 🎉</p>
+            <p className="text-gray-700 text-sm font-medium">All budgets are on track! 🎉</p>
           </div>
-          <p className="text-green-600 text-sm mt-1 ml-7">
+          <p className="text-gray-700 text-sm mt-1 ml-7">
             Your spending is within healthy limits across all categories.
           </p>
         </div>
@@ -401,9 +401,9 @@ export default function SmartBudgetAlerts() {
                     <div className="flex justify-between items-center">
                       <span>Progress: <strong>{budget.percentage.toFixed(1)}%</strong></span>
                       <span className={`font-medium px-2 py-0.5 rounded text-xs ${
-                        budget.status === 'over' ? 'bg-red-100 text-red-700' :
-                        budget.status === 'warning' ? 'bg-orange-100 text-orange-700' :
-                        budget.status === 'approaching' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                        budget.status === 'over' ? 'bg-red-100 text-gray-700' :
+                        budget.status === 'warning' ? 'bg-orange-100 text-gray-700' :
+                        budget.status === 'approaching' ? 'bg-yellow-100 text-gray-700' : 'bg-green-100 text-gray-700'
                       }`}>
                         {budget.status.toUpperCase()}
                       </span>
@@ -412,7 +412,7 @@ export default function SmartBudgetAlerts() {
                       Period: {new Date(budget.budget.startDate).toLocaleDateString()} - {new Date(budget.budget.endDate).toLocaleDateString()}
                     </div>
                     <div className="text-xs">
-                      Remaining: <span className={budget.remaining >= 0 ? 'text-green-600' : 'text-red-600 font-medium'}>
+                      Remaining: <span className={budget.remaining >= 0 ? 'text-gray-700' : 'text-gray-700 font-medium'}>
                         ₹{budget.remaining.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -432,25 +432,25 @@ export default function SmartBudgetAlerts() {
         return {
           bg: 'bg-red-50',
           border: 'border-red-200',
-          text: 'text-red-700',
-          icon: 'text-red-500',
-          badge: 'bg-red-100 text-red-800'
+          text: 'text-gray-700',
+          icon: 'text-gray-700',
+          badge: 'bg-red-100 text-gray-700'
         }
       case 'warning':
         return {
           bg: 'bg-orange-50',
           border: 'border-orange-200',
-          text: 'text-orange-700',
-          icon: 'text-orange-500',
-          badge: 'bg-orange-100 text-orange-800'
+          text: 'text-gray-700',
+          icon: 'text-gray-700',
+          badge: 'bg-orange-100 text-gray-700'
         }
       case 'approaching':
         return {
           bg: 'bg-yellow-50',
           border: 'border-yellow-200',
-          text: 'text-yellow-700',
-          icon: 'text-yellow-500',
-          badge: 'bg-yellow-100 text-yellow-800'
+          text: 'text-gray-700',
+          icon: 'text-gray-700',
+          badge: 'bg-yellow-100 text-gray-700'
         }
       default:
         return {
@@ -505,23 +505,23 @@ export default function SmartBudgetAlerts() {
       {error && error.startsWith('Warning:') && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
           <div className="flex items-center space-x-2">
-            <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            <p className="text-yellow-700 text-sm">{error}</p>
+            <p className="text-gray-700 text-sm">{error}</p>
           </div>
         </div>
       )}
       
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <svg className={`w-6 h-6 ${hasOverBudget ? 'text-red-600' : hasWarning ? 'text-orange-600' : 'text-yellow-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-6 h-6 ${hasOverBudget ? 'text-gray-700' : hasWarning ? 'text-gray-700' : 'text-gray-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
           <h2 className="text-lg font-semibold text-gray-800">Smart Budget Alerts</h2>
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-            hasOverBudget ? 'bg-red-100 text-red-800' :
-            hasWarning ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
+            hasOverBudget ? 'bg-red-100 text-gray-700' :
+            hasWarning ? 'bg-orange-100 text-gray-700' : 'bg-yellow-100 text-gray-700'
           }`}>
             {alerts.length} Alert{alerts.length > 1 ? 's' : ''}
           </span>
@@ -538,7 +538,7 @@ export default function SmartBudgetAlerts() {
           </button>
           <Link 
             href="/budgets" 
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline"
+            className="text-gray-700 hover:text-gray-700 text-sm font-medium hover:underline"
           >
             Manage Budgets →
           </Link>
@@ -550,36 +550,36 @@ export default function SmartBudgetAlerts() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-red-700 text-sm font-medium">Over Budget</span>
+            <span className="text-gray-700 text-sm font-medium">Over Budget</span>
           </div>
-          <p className="text-red-600 text-lg font-bold mt-1">
+          <p className="text-gray-700 text-lg font-bold mt-1">
             {allBudgets.filter(a => a.status === 'over').length}
           </p>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-            <span className="text-orange-700 text-sm font-medium">Near Limit</span>
+            <span className="text-gray-700 text-sm font-medium">Near Limit</span>
           </div>
-          <p className="text-orange-600 text-lg font-bold mt-1">
+          <p className="text-gray-700 text-lg font-bold mt-1">
             {allBudgets.filter(a => a.status === 'warning').length}
           </p>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <span className="text-yellow-700 text-sm font-medium">Approaching</span>
+            <span className="text-gray-700 text-sm font-medium">Approaching</span>
           </div>
-          <p className="text-yellow-600 text-lg font-bold mt-1">
+          <p className="text-gray-700 text-lg font-bold mt-1">
             {allBudgets.filter(a => a.status === 'approaching').length}
           </p>
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-green-700 text-sm font-medium">On Track</span>
+            <span className="text-gray-700 text-sm font-medium">On Track</span>
           </div>
-          <p className="text-green-600 text-lg font-bold mt-1">
+          <p className="text-gray-700 text-lg font-bold mt-1">
             {allBudgets.filter(a => a.status === 'good').length}
           </p>
         </div>
@@ -642,12 +642,12 @@ export default function SmartBudgetAlerts() {
       {alerts.length > 0 && (
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <div className="flex items-start space-x-2">
-            <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
             <div className="flex-1">
-              <p className="text-blue-700 text-sm font-medium mb-1">Smart Budget Tips</p>
-              <div className="text-blue-600 text-sm space-y-1">
+              <p className="text-gray-700 text-sm font-medium mb-1">Smart Budget Tips</p>
+              <div className="text-gray-700 text-sm space-y-1">
                 {alerts.some(alert => alert.status === 'over') && (
                   <p>• Consider reviewing spending habits for over-budget categories</p>
                 )}

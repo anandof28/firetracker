@@ -1,10 +1,13 @@
 'use client'
 
-import DataGrid from '@/components/DataGrid'
+import { DataTable } from '@/components/DataTable'
 import CustomDatePicker from '@/components/DatePicker'
+import { NeuralNetworkLoader } from '@/components/LoadingComponents'
+import PageHeader from '@/components/PageHeader'
+import { tokens } from '@/design/tokens'
 import { formatDateForDisplay, formatDateForInput, getToday } from '@/utils/dateHelpers'
+import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
-import { AILoadingOrb, NeuralNetworkLoader } from '@/components/LoadingComponents'
 
 interface Account {
   id: string
@@ -31,6 +34,7 @@ export default function TransactionsPage() {
   const [error, setError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
   const [filter, setFilter] = useState('all') // all, income, expense
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [transactionForm, setTransactionForm] = useState({ 
     type: 'income', 
     amount: '', 
@@ -106,6 +110,7 @@ export default function TransactionsPage() {
           date: null,
           accountId: accounts.length > 0 ? accounts[0].id : ''
         })
+        setIsModalOpen(false) // Close modal after successful creation
       } else {
         setError('Failed to create transaction')
       }
@@ -134,13 +139,100 @@ export default function TransactionsPage() {
     }
   }
 
-  // Make deleteTransaction available globally for AG Grid
-  useEffect(() => {
-    (window as any).deleteTransaction = deleteTransaction;
-    return () => {
-      delete (window as any).deleteTransaction;
-    };
-  }, []);
+  const transactionColumns: ColumnDef<Transaction>[] = [
+    {
+      accessorKey: 'type',
+      header: 'Type',
+      cell: (info) => {
+        const type = info.getValue() as string
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              type === 'income'
+                ? 'bg-green-100 text-gray-700'
+                : 'bg-red-100 text-gray-700'
+            }`}
+          >
+            {type}
+          </span>
+        )
+      },
+    },
+    {
+      accessorKey: 'amount',
+      header: 'Amount',
+      cell: (info) => (
+        <span style={{ fontFamily: 'monospace', color: '#1f2937' }}>
+          ₹{(info.getValue() as number).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'account',
+      header: 'Account',
+      cell: (info) => {
+        const account = info.getValue() as Account
+        return (
+          <div>
+            <div className="font-medium text-gray-800">{account.name}</div>
+            <div className="text-sm text-gray-500">₹{account.balance.toFixed(2)}</div>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'category',
+      header: 'Category',
+      cell: (info) => (
+        <span style={{ color: '#1f2937' }}>{info.getValue() as string}</span>
+      ),
+    },
+    {
+      accessorKey: 'note',
+      header: 'Note',
+      cell: (info) => (
+        <span style={{ color: '#6b7280', fontSize: '14px' }}>
+          {(info.getValue() as string) || '-'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      cell: (info) => (
+        <span style={{ color: '#1f2937' }}>
+          {formatDateForDisplay(info.getValue() as string)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'id',
+      header: 'Actions',
+      enableSorting: false,
+      cell: (info) => (
+        <button
+          onClick={() => deleteTransaction(info.getValue() as string)}
+          style={{
+            backgroundColor: tokens.colors.light.danger,
+            color: '#FFFFFF',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 500,
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'background-color 180ms cubic-bezier(.2,.8,.2,1)',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E57373')}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = tokens.colors.light.danger)
+          }
+        >
+          Delete
+        </button>
+      ),
+    },
+  ]
 
   const filteredTransactions = transactions.filter(t => 
     filter === 'all' || t.type === filter
@@ -168,158 +260,60 @@ export default function TransactionsPage() {
 
   return (
     <div className="p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Transactions</h1>
-          <p className="text-gray-600 mt-2">Track your income and expenses</p>
-        </div>
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title="Transactions"
+          description="Track your income and expenses"
+          buttonText="Add Transaction"
+          onButtonClick={() => setIsModalOpen(true)}
+          buttonColor="primary"
+        />
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-gray-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Add Transaction Form */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Add New Transaction</h2>
-            <form onSubmit={createTransaction} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Transaction Type
-                </label>
-                <select
-                  value={transactionForm.type}
-                  onChange={(e) => setTransactionForm({...transactionForm, type: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="income">Income</option>
-                  <option value="expense">Expense</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Account
-                </label>
-                <select
-                  value={transactionForm.accountId}
-                  onChange={(e) => setTransactionForm({...transactionForm, accountId: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select Account</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name} (₹{account.balance.toFixed(2)})
-                    </option>
-                  ))}
-                </select>
-                {accounts.length === 0 && (
-                  <p className="text-sm text-red-600 mt-1">
-                    No accounts available. Please create an account first.
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Enter amount"
-                  value={transactionForm.amount}
-                  onChange={(e) => setTransactionForm({...transactionForm, amount: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Salary, Food, Transport, Investment"
-                  value={transactionForm.category}
-                  onChange={(e) => setTransactionForm({...transactionForm, category: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Note (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Additional details"
-                  value={transactionForm.note}
-                  onChange={(e) => setTransactionForm({...transactionForm, note: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Transaction Date
-                </label>
-                <CustomDatePicker
-                  selected={transactionForm.date}
-                  onChange={(date) => setTransactionForm({...transactionForm, date: date})}
-                  placeholder="Transaction Date (today if empty)"
-                  maxDate={getToday()}
-                />
-              </div>
-              <button 
-                type="submit" 
-                disabled={formLoading}
-                className={`w-full p-3 rounded-md transition-all font-medium text-white flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none disabled:opacity-50 disabled:cursor-not-allowed ${
-                  transactionForm.type === 'income' 
-                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800' 
-                    : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
-                }`}
-              >
-                {formLoading && (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                )}
-                Add {transactionForm.type === 'income' ? 'Income' : 'Expense'}
-              </button>
-            </form>
+        {/* Summary Cards - Compact */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+          <div style={{
+            backgroundColor: 'rgba(124, 197, 160, 0.08)',
+            borderRadius: '10px',
+            padding: '16px',
+            borderLeft: '3px solid #7CC5A0'
+          }}>
+            <p style={{ fontSize: '13px', color: '#6B7280', fontWeight: 500, marginBottom: '6px' }}>Total Income</p>
+            <p style={{ fontSize: '22px', fontWeight: 600, color: '#7CC5A0' }}>₹{totalIncome.toLocaleString('en-IN')}</p>
           </div>
-
-          {/* Summary Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Financial Summary</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                <span className="text-gray-700 font-medium">Total Income</span>
-                <span className="text-2xl font-bold text-green-600">
-                  ₹{totalIncome.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                <span className="text-gray-700 font-medium">Total Expenses</span>
-                <span className="text-2xl font-bold text-red-600">
-                  ₹{totalExpense.toFixed(2)}
-                </span>
-              </div>
-              <div className={`flex justify-between items-center p-3 rounded-lg ${
-                netAmount >= 0 ? 'bg-blue-50' : 'bg-orange-50'
-              }`}>
-                <span className="text-gray-700 font-medium">Net Amount</span>
-                <span className={`text-2xl font-bold ${
-                  netAmount >= 0 ? 'text-blue-600' : 'text-orange-600'
-                }`}>
-                  ₹{netAmount.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                <span className="text-gray-700 font-medium">Total Transactions</span>
-                <span className="text-2xl font-bold text-gray-600">{transactions.length}</span>
-              </div>
-            </div>
+          <div style={{
+            backgroundColor: 'rgba(232, 138, 138, 0.08)',
+            borderRadius: '10px',
+            padding: '16px',
+            borderLeft: '3px solid #E88A8A'
+          }}>
+            <p style={{ fontSize: '13px', color: '#6B7280', fontWeight: 500, marginBottom: '6px' }}>Total Expenses</p>
+            <p style={{ fontSize: '22px', fontWeight: 600, color: '#E88A8A' }}>₹{totalExpense.toLocaleString('en-IN')}</p>
+          </div>
+          <div style={{
+            backgroundColor: netAmount >= 0 ? 'rgba(123, 170, 207, 0.08)' : 'rgba(229, 184, 166, 0.08)',
+            borderRadius: '10px',
+            padding: '16px',
+            borderLeft: `3px solid ${netAmount >= 0 ? '#7BAACF' : '#E5B8A6'}`
+          }}>
+            <p style={{ fontSize: '13px', color: '#6B7280', fontWeight: 500, marginBottom: '6px' }}>Net Amount</p>
+            <p style={{ fontSize: '22px', fontWeight: 600, color: netAmount >= 0 ? '#7BAACF' : '#E5B8A6' }}>
+              ₹{netAmount.toLocaleString('en-IN')}
+            </p>
+          </div>
+          <div style={{
+            backgroundColor: 'rgba(163, 201, 168, 0.08)',
+            borderRadius: '10px',
+            padding: '16px',
+            borderLeft: '3px solid #A3C9A8'
+          }}>
+            <p style={{ fontSize: '13px', color: '#6B7280', fontWeight: 500, marginBottom: '6px' }}>Transactions</p>
+            <p style={{ fontSize: '22px', fontWeight: 600, color: '#A3C9A8' }}>{transactions.length}</p>
           </div>
         </div>
 
@@ -366,89 +360,259 @@ export default function TransactionsPage() {
               No transactions found. Add your first transaction above.
             </div>
           ) : (
-            <DataGrid
-              rowData={filteredTransactions}
-              columnDefs={[
-                {
-                  headerName: 'Type',
-                  field: 'type',
-                  width: 120,
-                  cellRenderer: (params: any) => {
-                    const type = params.value;
-                    return (
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        type === 'income' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {type}
-                      </span>
-                    );
-                  }
-                },
-                {
-                  headerName: 'Amount',
-                  field: 'amount',
-                  width: 140,
-                  type: 'rightAligned',
-                  valueFormatter: (params: any) => `₹${params.value.toFixed(2)}`,
-                  cellStyle: { fontFamily: 'monospace', textAlign: 'right', color: '#1f2937' }
-                },
-                {
-                  headerName: 'Account',
-                  field: 'account',
-                  width: 180,
-                  cellRenderer: (params: any) => {
-                    const account = params.value;
-                    return (
-                      <div>
-                        <div className="font-medium text-gray-800">{account.name}</div>
-                        <div className="text-sm text-gray-500">₹{account.balance.toFixed(2)}</div>
-                      </div>
-                    );
-                  }
-                },
-                {
-                  headerName: 'Category',
-                  field: 'category',
-                  width: 150,
-                  cellStyle: { color: '#1f2937' }
-                },
-                {
-                  headerName: 'Note',
-                  field: 'note',
-                  flex: 1,
-                  valueFormatter: (params: any) => params.value || '-',
-                  cellStyle: { color: '#6b7280', fontSize: '14px' }
-                },
-                {
-                  headerName: 'Date',
-                  field: 'date',
-                  width: 130,
-                  valueFormatter: (params: any) => formatDateForDisplay(params.value),
-                  cellStyle: { color: '#1f2937' }
-                },
-                {
-                  headerName: 'Actions',
-                  field: 'id',
-                  width: 100,
-                  cellRenderer: (params: any) => {
-                    return (
-                      <button 
-                        onClick={() => deleteTransaction(params.value)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors">
-                        Delete
-                      </button>
-                    );
-                  },
-                  sortable: false,
-                  filter: false
-                }
-              ]}
+            <DataTable
+              data={filteredTransactions}
+              columns={transactionColumns}
+              enableSorting={true}
+              enablePagination={true}
+              pageSize={10}
             />
           )}
         </div>
       </div>
+
+      {/* Add Transaction Modal */}
+      {isModalOpen && (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(17, 24, 39, 0.45)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1300,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '14px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.10)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              background: 'linear-gradient(135deg, #7BAACF 0%, #6AA0C8 100%)',
+              padding: '20px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderTopLeftRadius: '14px',
+              borderTopRightRadius: '14px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  padding: '8px',
+                  borderRadius: '10px'
+                }}>
+                  <svg width="20" height="20" fill="none" stroke="#FFFFFF" viewBox="0 0 24 24" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#FFFFFF' }}>Add New Transaction</h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{
+                  color: '#FFFFFF',
+                  backgroundColor: 'transparent',
+                  padding: '6px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 180ms cubic-bezier(.2,.8,.2,1)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={createTransaction} className="flex flex-col flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Transaction Type
+                </label>
+                <select
+                  value={transactionForm.type}
+                  onChange={(e) => setTransactionForm({...transactionForm, type: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Account
+                </label>
+                <select
+                  value={transactionForm.accountId}
+                  onChange={(e) => setTransactionForm({...transactionForm, accountId: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select Account</option>
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name} (₹{account.balance.toFixed(2)})
+                    </option>
+                  ))}
+                </select>
+                {accounts.length === 0 && (
+                  <p className="text-sm text-gray-700 mt-1">
+                    No accounts available. Please create an account first.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Enter amount"
+                  value={transactionForm.amount}
+                  onChange={(e) => setTransactionForm({...transactionForm, amount: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Salary, Food, Transport, Investment"
+                  value={transactionForm.category}
+                  onChange={(e) => setTransactionForm({...transactionForm, category: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Additional details"
+                  value={transactionForm.note}
+                  onChange={(e) => setTransactionForm({...transactionForm, note: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Transaction Date
+                </label>
+                <CustomDatePicker
+                  selected={transactionForm.date}
+                  onChange={(date) => setTransactionForm({...transactionForm, date: date})}
+                  placeholder="Transaction Date (today if empty)"
+                  maxDate={getToday()}
+                />
+              </div>
+              </div>
+
+              {/* Fixed Action Bar */}
+              <div style={{
+                borderTop: '1.5px solid #E5E7EB',
+                padding: '16px 24px',
+                backgroundColor: '#F9FAFB',
+                borderBottomLeftRadius: '14px',
+                borderBottomRightRadius: '14px',
+                display: 'flex',
+                gap: '12px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 24px',
+                    border: '1.5px solid #E5E7EB',
+                    borderRadius: '10px',
+                    color: '#4B5563',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    backgroundColor: '#FFFFFF',
+                    cursor: 'pointer',
+                    transition: 'all 180ms cubic-bezier(.2,.8,.2,1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F9FAFB';
+                    e.currentTarget.style.borderColor = '#D1D5DB';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '#E5E7EB';
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={formLoading}
+                  style={{
+                    flex: 1,
+                    padding: '10px 24px',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: 500,
+                    color: '#FFFFFF',
+                    backgroundColor: transactionForm.type === 'income' ? '#7CC5A0' : '#E88A8A',
+                    border: 'none',
+                    cursor: formLoading ? 'not-allowed' : 'pointer',
+                    opacity: formLoading ? 0.6 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 180ms cubic-bezier(.2,.8,.2,1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!formLoading) {
+                      e.currentTarget.style.backgroundColor = transactionForm.type === 'income' ? '#6BB890' : '#E57373';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!formLoading) {
+                      e.currentTarget.style.backgroundColor = transactionForm.type === 'income' ? '#7CC5A0' : '#E88A8A';
+                    }
+                  }}
+                >
+                  {formLoading && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  Add {transactionForm.type === 'income' ? 'Income' : 'Expense'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

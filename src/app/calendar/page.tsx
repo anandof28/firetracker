@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useCalendarEvents, CalendarEvent } from '@/hooks/useCalendarEvents';
-import { ModalLoader } from '@/components/LoadingComponents';
+import { CalendarEvent, useCalendarEvents } from '@/hooks/useCalendarEvents';
+import { useEffect, useState } from 'react';
 
 interface CalendarDay {
   date: Date;
@@ -258,9 +257,9 @@ export default function CalendarPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 text-red-700 p-4 rounded-r-lg mb-6 shadow-md">
+          <div className="bg-red-50 border-l-4 border-red-400 text-gray-700 p-4 rounded-r-lg mb-6 shadow-md">
             <div className="flex items-center">
-              <span className="text-red-400 mr-2">⚠️</span>
+              <span className="text-gray-700 mr-2">⚠️</span>
               <span className="font-medium">Error:</span>
               <span className="ml-2">{error}</span>
             </div>
@@ -314,7 +313,7 @@ export default function CalendarPage() {
                 >
                   <div className={`font-semibold mb-2 ${
                     isToday 
-                      ? 'text-blue-600 bg-blue-200 rounded-full w-8 h-8 flex items-center justify-center text-sm' 
+                      ? 'text-gray-700 bg-blue-200 rounded-full w-8 h-8 flex items-center justify-center text-sm' 
                       : 'text-gray-700'
                   }`}>
                     {day.date.getDate()}
@@ -434,7 +433,7 @@ export default function CalendarPage() {
                       type="checkbox"
                       checked={eventForm.allDay}
                       onChange={(e) => setEventForm(prev => ({ ...prev, allDay: e.target.checked }))}
-                      className="mr-3 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      className="mr-3 w-4 h-4 text-gray-700 rounded focus:ring-blue-500"
                     />
                     <span className="font-medium text-gray-700">🕐 All Day Event</span>
                   </label>

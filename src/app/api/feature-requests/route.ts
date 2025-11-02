@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // GET - Fetch all public feature requests
 export async function GET() {
@@ -147,16 +148,20 @@ export async function POST(request: NextRequest) {
         </div>
       `;
 
-      const resendResponse = await resend.emails.send({
-        from: 'onboarding@resend.dev',
-        to: ['lifeofram86@gmail.com'],
-        subject: `🚀 New Feature Request: ${title}`,
-        html: emailHtml,
-      });
+      if (resend) {
+        const resendResponse = await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: ['lifeofram86@gmail.com'],
+          subject: `🚀 New Feature Request: ${title}`,
+          html: emailHtml,
+        });
 
-      if (!resendResponse.data) {
-        const error = await resendResponse.error;
-        console.error('Resend error:', error);
+        if (!resendResponse.data) {
+          const error = await resendResponse.error;
+          console.error('Resend error:', error);
+        }
+      } else {
+        console.log('Resend API key not configured - skipping email notification');
       }
     } catch (emailError) {
       console.error('Feature request email error:', emailError);

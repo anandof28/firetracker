@@ -27,10 +27,10 @@ export default function ContactUs() {
   ]
 
   const priorities = [
-    { value: 'low', label: 'Low - General question', color: 'text-green-600' },
-    { value: 'medium', label: 'Medium - Need assistance', color: 'text-yellow-600' },
-    { value: 'high', label: 'High - Urgent issue', color: 'text-orange-600' },
-    { value: 'critical', label: 'Critical - System down', color: 'text-red-600' }
+    { value: 'low', label: 'Low - General question', color: 'text-gray-700' },
+    { value: 'medium', label: 'Medium - Need assistance', color: 'text-gray-700' },
+    { value: 'high', label: 'High - Urgent issue', color: 'text-gray-700' },
+    { value: 'critical', label: 'Critical - System down', color: 'text-gray-700' }
   ]
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -253,19 +253,19 @@ export default function ContactUs() {
                 </p>
                 <div className="mb-4 space-y-2">
                   <div className="flex items-center text-xs text-gray-600">
-                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     Feature updates & product news
                   </div>
                   <div className="flex items-center text-xs text-gray-600">
-                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     Financial planning tips
                   </div>
                   <div className="flex items-center text-xs text-gray-600">
-                    <svg className="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-2 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     Exclusive beta features
@@ -345,16 +345,16 @@ export default function ContactUs() {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Resources</h3>
                 <div className="space-y-3">
-                  <a href="/support/help-center" className="block text-blue-600 hover:text-blue-800 text-sm">
+                  <a href="/support/help-center" className="block text-gray-700 hover:text-gray-700 text-sm">
                     📚 Help Center
                   </a>
-                  <a href="/support/feature-requests" className="block text-blue-600 hover:text-blue-800 text-sm">
+                  <a href="/support/feature-requests" className="block text-gray-700 hover:text-gray-700 text-sm">
                     💡 Feature Requests
                   </a>
-                  <a href="/support/feedback" className="block text-blue-600 hover:text-blue-800 text-sm">
+                  <a href="/support/feedback" className="block text-gray-700 hover:text-gray-700 text-sm">
                     💬 Beta Feedback
                   </a>
-                  <a href="/reports" className="block text-blue-600 hover:text-blue-800 text-sm">
+                  <a href="/reports" className="block text-gray-700 hover:text-gray-700 text-sm">
                     📊 System Status
                   </a>
                 </div>
@@ -362,8 +362,8 @@ export default function ContactUs() {
 
               {/* Beta Notice */}
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-200">
-                <h3 className="text-lg font-semibold text-purple-900 mb-2">Beta Program</h3>
-                <p className="text-sm text-purple-800">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Beta Program</h3>
+                <p className="text-sm text-gray-700">
                   As a beta user, you get priority support and direct access to our development team. 
                   Your feedback helps shape the future of Fire Tracker!
                 </p>

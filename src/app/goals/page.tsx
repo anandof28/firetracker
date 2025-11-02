@@ -152,10 +152,10 @@ export default function GoalsPage() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      emergency: 'bg-red-100 text-red-800',
-      investment: 'bg-blue-100 text-blue-800',
-      savings: 'bg-green-100 text-green-800',
-      purchase: 'bg-purple-100 text-purple-800',
+      emergency: 'bg-red-100 text-gray-700',
+      investment: 'bg-blue-100 text-gray-700',
+      savings: 'bg-green-100 text-gray-700',
+      purchase: 'bg-purple-100 text-gray-700',
       other: 'bg-gray-100 text-gray-800'
     }
     return colors[category as keyof typeof colors] || colors.other
@@ -437,7 +437,7 @@ export default function GoalsPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{goal.title}</h3>
                     {!goal.isCompleted && recommendation && (
-                      <p className="text-xs text-blue-600 font-medium mt-1">
+                      <p className="text-xs text-gray-700 font-medium mt-1">
                         {getQuickRecommendation(recommendation)}
                       </p>
                     )}
@@ -446,14 +446,14 @@ export default function GoalsPage() {
                     <button
                       onClick={() => toggleComplete(goal.id, goal.isCompleted)}
                       className={`text-xs px-2 py-1 rounded ${
-                        goal.isCompleted ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                        goal.isCompleted ? 'bg-green-100 text-gray-700' : 'bg-gray-100 text-gray-600'
                       }`}
                     >
                       {goal.isCompleted ? '✓' : '○'}
                     </button>
                     <button
                       onClick={() => deleteGoal(goal.id)}
-                      className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                      className="text-xs px-2 py-1 bg-red-100 text-gray-700 rounded hover:bg-red-200"
                     >
                       ×
                     </button>
@@ -502,7 +502,7 @@ export default function GoalsPage() {
                   {goal.targetDate && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Target Date:</span>
-                      <span className={`font-medium ${isOverdue ? 'text-red-600' : ''}`}>
+                      <span className={`font-medium ${isOverdue ? 'text-gray-700' : ''}`}>
                         {new Date(goal.targetDate).toLocaleDateString('en-IN')}
                       </span>
                     </div>
@@ -517,22 +517,22 @@ export default function GoalsPage() {
                       <h4 className="text-sm font-medium text-gray-700 mb-2">💡 Recommended Contributions</h4>
                       {recommendation.overdue ? (
                         <div className="bg-red-50 rounded-lg p-2">
-                          <p className="text-xs text-red-600 font-medium">{recommendation.message}</p>
-                          <p className="text-xs text-red-500 mt-1">Amount needed: ₹{Math.max(0, goal.targetAmount - currentAmount).toLocaleString('en-IN')}</p>
+                          <p className="text-xs text-gray-700 font-medium">{recommendation.message}</p>
+                          <p className="text-xs text-gray-700 mt-1">Amount needed: ₹{Math.max(0, goal.targetAmount - currentAmount).toLocaleString('en-IN')}</p>
                         </div>
                       ) : (
                         <div className="bg-blue-50 rounded-lg p-2 space-y-1">
                           <div className="flex justify-between text-xs">
                             <span className="text-gray-600">Monthly:</span>
-                            <span className="font-medium text-blue-700">₹{Math.ceil(recommendation.monthly).toLocaleString('en-IN')}</span>
+                            <span className="font-medium text-gray-700">₹{Math.ceil(recommendation.monthly).toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex justify-between text-xs">
                             <span className="text-gray-600">Weekly:</span>
-                            <span className="font-medium text-blue-700">₹{Math.ceil(recommendation.weekly).toLocaleString('en-IN')}</span>  
+                            <span className="font-medium text-gray-700">₹{Math.ceil(recommendation.weekly).toLocaleString('en-IN')}</span>  
                           </div>
                           <div className="flex justify-between text-xs">
                             <span className="text-gray-600">Daily:</span>
-                            <span className="font-medium text-blue-700">₹{Math.ceil(recommendation.daily).toLocaleString('en-IN')}</span>
+                            <span className="font-medium text-gray-700">₹{Math.ceil(recommendation.daily).toLocaleString('en-IN')}</span>
                           </div>
                           {recommendation.monthsRemaining && recommendation.monthsRemaining > 0 && (
                             <p className="text-xs text-gray-500 mt-2">
@@ -574,7 +574,7 @@ export default function GoalsPage() {
                           .map((addition) => (
                           <div key={addition.id} className="bg-gray-50 rounded-lg p-3 text-sm">
                             <div className="flex justify-between items-start mb-1">
-                              <span className="font-medium text-green-600">
+                              <span className="font-medium text-gray-700">
                                 +₹{addition.amount.toLocaleString('en-IN')}
                               </span>
                               <span className="text-gray-500 text-xs">
@@ -594,7 +594,7 @@ export default function GoalsPage() {
                 <div className="mt-4 pt-3 border-t border-gray-200">
                   <button
                     onClick={() => setShowFundForm(goal.id)}
-                    className="w-full bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                    className="w-full bg-blue-50 text-gray-700 py-2 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
                   >
                     Add Funds
                   </button>

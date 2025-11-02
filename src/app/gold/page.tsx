@@ -1,10 +1,13 @@
 'use client'
 
-import DataGrid from '@/components/DataGrid'
+import { DataTable } from '@/components/DataTable'
 import DatePicker from '@/components/DatePicker'
+import { NeuralNetworkLoader } from '@/components/LoadingComponents'
+import PageHeader from '@/components/PageHeader'
+import { tokens } from '@/design/tokens'
 import { formatDateForDisplay, formatDateForInput, getToday } from '@/utils/dateHelpers'
+import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
-import { AILoadingOrb, NeuralNetworkLoader } from '@/components/LoadingComponents'
 
 interface Gold {
   id: string
@@ -18,6 +21,7 @@ export default function GoldPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentGoldRate, setCurrentGoldRate] = useState('')
   const [goldForm, setGoldForm] = useState({ 
     grams: '', 
@@ -63,6 +67,7 @@ export default function GoldPage() {
       if (response.ok) {
         fetchGold()
         setGoldForm({ grams: '', value: '', date: null })
+        setIsModalOpen(false)
       } else {
         setError('Failed to create gold record')
       }
@@ -90,17 +95,103 @@ export default function GoldPage() {
     }
   }
 
-  // Make deleteGold available globally for AG Grid
-  useEffect(() => {
-    (window as any).deleteGold = deleteGold;
-    return () => {
-      delete (window as any).deleteGold;
-    };
-  }, []);
-
   const calculateRatePerGram = (value: number, grams: number) => {
     return value / grams
   }
+
+  const goldColumns: ColumnDef<Gold>[] = [
+    {
+      accessorKey: 'grams',
+      header: 'Weight',
+      cell: (info) => (
+        <span style={{ fontFamily: 'monospace', color: '#1f2937' }}>
+          {(info.getValue() as number).toFixed(3)}g
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'value',
+      header: 'Purchase Value',
+      cell: (info) => (
+        <span style={{ fontFamily: 'monospace', textAlign: 'right', color: '#1f2937' }}>
+          ₹{(info.getValue() as number).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      id: 'rate',
+      header: 'Purchase Rate/g',
+      cell: (info) => {
+        const gold = info.row.original
+        const rate = calculateRatePerGram(gold.value, gold.grams)
+        return (
+          <span style={{ fontFamily: 'monospace', textAlign: 'right', color: '#1f2937' }}>
+            ₹{rate.toFixed(2)}
+          </span>
+        )
+      },
+    },
+    ...(currentGoldRate
+      ? [
+          {
+            id: 'currentValue' as const,
+            header: 'Current Value',
+            cell: (info: any) => {
+              const gold = info.row.original as Gold
+              const currentValue = gold.grams * parseFloat(currentGoldRate)
+              const profit = currentValue - gold.value
+              return (
+                <div className="text-right font-mono">
+                  <div className="text-gray-800">₹{currentValue.toFixed(2)}</div>
+                  <div
+                    className={`text-xs ${profit > 0 ? 'text-gray-700' : 'text-gray-700'}`}
+                  >
+                    {profit > 0 ? '+' : ''}
+                    {profit.toFixed(2)}
+                  </div>
+                </div>
+              )
+            },
+          },
+        ]
+      : []),
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      cell: (info) => (
+        <span style={{ color: '#1f2937' }}>
+          {formatDateForDisplay(info.getValue() as string)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'id',
+      header: 'Actions',
+      enableSorting: false,
+      cell: (info) => (
+        <button
+          onClick={() => deleteGold(info.getValue() as string)}
+          style={{
+            backgroundColor: tokens.colors.light.danger,
+            color: '#FFFFFF',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 500,
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'background-color 180ms cubic-bezier(.2,.8,.2,1)',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E57373')}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = tokens.colors.light.danger)
+          }
+        >
+          Delete
+        </button>
+      ),
+    },
+  ]
 
   if (loading) {
     return (
@@ -119,168 +210,119 @@ export default function GoldPage() {
   return (
     <div className="p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Gold Investments</h1>
-          <p className="text-gray-600 mt-2">Track your gold purchases and current value</p>
-        </div>
+        <PageHeader
+          title="Gold Investments"
+          description="Track your gold purchases and current value"
+          buttonText="Add Gold"
+          onButtonClick={() => setIsModalOpen(true)}
+          buttonColor="secondary"
+        />
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-gray-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Current Gold Rate & Calculator */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Current Gold Rate & Calculator</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Gold Rate (₹ per gram)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Enter current gold rate"
-                  value={currentGoldRate}
-                  onChange={(e) => setCurrentGoldRate(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-                <p className="text-sm text-gray-500 mt-1">Update this with today's market rate</p>
-              </div>
-
-              {currentGoldRate && (
-                <div className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
-                  <div className="text-sm text-gray-600 mb-2">Quick Calculator:</div>
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-lg font-bold text-yellow-700">₹{(parseFloat(currentGoldRate) * 1).toFixed(2)}</div>
-                      <div className="text-xs text-gray-600">1 gram</div>
-                    </div>
-                    <div>
-                      <div className="text-lg font-bold text-yellow-700">₹{(parseFloat(currentGoldRate) * 10).toFixed(2)}</div>
-                      <div className="text-xs text-gray-600">10 grams</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
-                💡 Tip: Enter your historical gold purchases below. The system will track your purchase value and show current market value based on today's rate.
-              </div>
+        {/* Current Gold Rate - Compact */}
+        <div className="bg-gradient-linear-to-r from-amber-50 to-amber-100 rounded-lg p-3 mb-4 border border-amber-200">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-amber-700 mb-1">
+                Current Gold Rate (₹/gram)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Enter rate"
+                value={currentGoldRate}
+                onChange={(e) => setCurrentGoldRate(e.target.value)}
+                className="w-full px-3 py-1.5 text-sm border border-amber-300 rounded-md focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              />
             </div>
-          </div>
-
-          {/* Add Gold Form */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Add Gold Purchase</h2>
-            <form onSubmit={createGold} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Weight (Grams)
-                </label>
-                <input
-                  type="number"
-                  step="0.001"
-                  placeholder="Enter weight in grams"
-                  value={goldForm.grams}
-                  onChange={(e) => {
-                    const newGrams = e.target.value
-                    setGoldForm({...goldForm, grams: newGrams})
-                    
-                    // Auto-calculate value if current rate is available and we have grams
-                    if (currentGoldRate && newGrams) {
-                      const calculatedValue = (parseFloat(newGrams) * parseFloat(currentGoldRate)).toFixed(2)
-                      setGoldForm(prev => ({...prev, grams: newGrams, value: calculatedValue}))
-                    }
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Total Value (₹)
-                  {currentGoldRate && goldForm.grams && (
-                    <span className="text-sm text-gray-500 ml-2">
-                      (Auto-calculated: ₹{(parseFloat(goldForm.grams) * parseFloat(currentGoldRate)).toFixed(2)})
-                    </span>
-                  )}
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Enter total purchase value"
-                  value={goldForm.value}
-                  onChange={(e) => setGoldForm({...goldForm, value: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  required
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  {currentGoldRate && goldForm.grams 
-                    ? "Value auto-calculated based on current rate (you can modify if needed)" 
-                    : "Enter the actual purchase value"
-                  }
-                </p>
-              </div>
-              {goldForm.grams && goldForm.value && (
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <div className="text-sm text-gray-600">Rate per gram:</div>
-                  <div className="text-lg font-semibold text-blue-700">
-                    ₹{calculateRatePerGram(parseFloat(goldForm.value), parseFloat(goldForm.grams)).toFixed(2)}/g
-                  </div>
+            {currentGoldRate && (
+              <div className="flex gap-2 text-xs">
+                <div className="bg-white rounded px-2 py-1 border border-amber-200">
+                  <div className="font-bold text-amber-700">₹{parseFloat(currentGoldRate).toFixed(0)}</div>
+                  <div className="text-gray-500">1g</div>
                 </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Purchase Date
-                </label>
-                <DatePicker
-                  selected={goldForm.date}
-                  onChange={(date: Date | null) => setGoldForm({...goldForm, date: date})}
-                  placeholder="Purchase Date (today if empty)"
-                  maxDate={getToday()}
-                />
+                <div className="bg-white rounded px-2 py-1 border border-amber-200">
+                  <div className="font-bold text-amber-700">₹{(parseFloat(currentGoldRate) * 10).toFixed(0)}</div>
+                  <div className="text-gray-500">10g</div>
+                </div>
               </div>
-              <button 
-                type="submit" 
-                disabled={formLoading}
-                className="w-full bg-gradient-to-r from-yellow-600 to-yellow-700 text-white p-3 rounded-md hover:from-yellow-700 hover:to-yellow-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none"
-              >
-                {formLoading && (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                )}
-                Add Gold Purchase
-              </button>
-            </form>
+            )}
           </div>
+        </div>
 
+        {/* Summary Cards - Compact */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+          <div style={{
+            backgroundColor: 'rgba(234, 194, 122, 0.08)',
+            borderRadius: '10px',
+            padding: '12px',
+            borderLeft: '3px solid #EAC27A'
+          }}>
+            <p style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>Purchases</p>
+            <p style={{ fontSize: '20px', fontWeight: 600, color: '#EAC27A' }}>{gold.length}</p>
+          </div>
+          <div style={{
+            backgroundColor: 'rgba(229, 184, 166, 0.08)',
+            borderRadius: '10px',
+            padding: '12px',
+            borderLeft: '3px solid #E5B8A6'
+          }}>
+            <p style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>Total Weight</p>
+            <p style={{ fontSize: '20px', fontWeight: 600, color: '#E5B8A6' }}>{gold.reduce((sum, g) => sum + g.grams, 0).toFixed(2)}g</p>
+          </div>
+          <div style={{
+            backgroundColor: 'rgba(124, 197, 160, 0.08)',
+            borderRadius: '10px',
+            padding: '12px',
+            borderLeft: '3px solid #7CC5A0'
+          }}>
+            <p style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>Purchase Value</p>
+            <p style={{ fontSize: '20px', fontWeight: 600, color: '#7CC5A0' }}>₹{gold.reduce((sum, g) => sum + g.value, 0).toLocaleString('en-IN', {maximumFractionDigits: 0})}</p>
+          </div>
+          {currentGoldRate && gold.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(123, 170, 207, 0.08)',
+              borderRadius: '10px',
+              padding: '12px',
+              borderLeft: '3px solid #7BAACF'
+            }}>
+              <p style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>Current Value</p>
+              <p style={{ fontSize: '20px', fontWeight: 600, color: '#7BAACF' }}>
+                ₹{(gold.reduce((sum, g) => sum + g.grams, 0) * parseFloat(currentGoldRate)).toLocaleString('en-IN', {maximumFractionDigits: 0})}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
           {/* Summary Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Gold Portfolio</h2>
+          <div className="hidden">
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
                 <span className="text-gray-700 font-medium">Total Purchases</span>
-                <span className="text-2xl font-bold text-yellow-600">{gold.length}</span>
+                <span className="text-2xl font-bold text-gray-700">{gold.length}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
                 <span className="text-gray-700 font-medium">Total Weight</span>
-                <span className="text-2xl font-bold text-orange-600">
+                <span className="text-2xl font-bold text-gray-700">
                   {gold.reduce((sum, g) => sum + g.grams, 0).toFixed(3)}g
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                 <span className="text-gray-700 font-medium">Purchase Value</span>
-                <span className="text-2xl font-bold text-green-600">
+                <span className="text-2xl font-bold text-gray-700">
                   ₹{gold.reduce((sum, g) => sum + g.value, 0).toFixed(2)}
                 </span>
               </div>
               {currentGoldRate && gold.length > 0 && (
                 <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
                   <span className="text-gray-700 font-medium">Current Market Value</span>
-                  <span className="text-2xl font-bold text-yellow-600">
+                  <span className="text-2xl font-bold text-gray-700">
                     ₹{(gold.reduce((sum, g) => sum + g.grams, 0) * parseFloat(currentGoldRate)).toFixed(2)}
                   </span>
                 </div>
@@ -290,7 +332,7 @@ export default function GoldPage() {
                   <span className="text-gray-700 font-medium">
                     {(gold.reduce((sum, g) => sum + g.grams, 0) * parseFloat(currentGoldRate)) > gold.reduce((sum, g) => sum + g.value, 0) ? 'Profit' : 'Loss'}
                   </span>
-                  <span className={`text-2xl font-bold ${(gold.reduce((sum, g) => sum + g.grams, 0) * parseFloat(currentGoldRate)) > gold.reduce((sum, g) => sum + g.value, 0) ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-2xl font-bold ${(gold.reduce((sum, g) => sum + g.grams, 0) * parseFloat(currentGoldRate)) > gold.reduce((sum, g) => sum + g.value, 0) ? 'text-gray-700' : 'text-gray-700'}`}>
                     ₹{Math.abs((gold.reduce((sum, g) => sum + g.grams, 0) * parseFloat(currentGoldRate)) - gold.reduce((sum, g) => sum + g.value, 0)).toFixed(2)}
                   </span>
                 </div>
@@ -298,7 +340,7 @@ export default function GoldPage() {
               {gold.length > 0 && (
                 <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                   <span className="text-gray-700 font-medium">Avg. Rate/g</span>
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-2xl font-bold text-gray-700">
                     ₹{(gold.reduce((sum, g) => sum + g.value, 0) / gold.reduce((sum, g) => sum + g.grams, 0)).toFixed(2)}
                   </span>
                 </div>
@@ -318,82 +360,140 @@ export default function GoldPage() {
               No gold purchases found. Add your first purchase above.
             </div>
           ) : (
-            <DataGrid
-              rowData={gold}
-              columnDefs={[
-                {
-                  headerName: 'Weight',
-                  field: 'grams',
-                  width: 120,
-                  valueFormatter: (params: any) => `${params.value.toFixed(3)}g`,
-                  cellStyle: { fontFamily: 'monospace', color: '#1f2937' }
-                },
-                {
-                  headerName: 'Purchase Value',
-                  field: 'value',
-                  width: 150,
-                  type: 'rightAligned',
-                  valueFormatter: (params: any) => `₹${params.value.toFixed(2)}`,
-                  cellStyle: { fontFamily: 'monospace', textAlign: 'right', color: '#1f2937' }
-                },
-                {
-                  headerName: 'Purchase Rate/g',
-                  field: 'value',
-                  width: 150,
-                  type: 'rightAligned',
-                  valueFormatter: (params: any) => {
-                    const rate = calculateRatePerGram(params.data.value, params.data.grams);
-                    return `₹${rate.toFixed(2)}`;
-                  },
-                  cellStyle: { fontFamily: 'monospace', textAlign: 'right', color: '#1f2937' }
-                },
-                ...(currentGoldRate ? [{
-                  headerName: 'Current Value',
-                  field: 'grams',
-                  width: 150,
-                  type: 'rightAligned',
-                  cellRenderer: (params: any) => {
-                    const currentValue = params.value * parseFloat(currentGoldRate);
-                    const profit = currentValue - params.data.value;
-                    return (
-                      <div className="text-right font-mono">
-                        <div className="text-gray-800">₹{currentValue.toFixed(2)}</div>
-                        <div className={`text-xs ${profit > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {profit > 0 ? '+' : ''}{profit.toFixed(2)}
-                        </div>
-                      </div>
-                    );
-                  }
-                }] : []),
-                {
-                  headerName: 'Date',
-                  field: 'date',
-                  width: 130,
-                  valueFormatter: (params: any) => formatDateForDisplay(params.value),
-                  cellStyle: { color: '#1f2937' }
-                },
-                {
-                  headerName: 'Actions',
-                  field: 'id',
-                  width: 100,
-                  cellRenderer: (params: any) => {
-                    return (
-                      <button
-                        onClick={() => deleteGold(params.value)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
-                      >
-                        Delete
-                      </button>
-                    );
-                  },
-                  sortable: false,
-                  filter: false
-                }
-              ]}
+            <DataTable
+              data={gold}
+              columns={goldColumns}
+              enableSorting={true}
+              enablePagination={true}
+              pageSize={10}
             />
           )}
         </div>
       </div>
+
+      {/* Add Gold Modal */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-linear-to-r from-yellow-600 to-yellow-700 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-white">Add Gold Purchase</h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto max-h-[calc(90vh-88px)]">
+              <form onSubmit={createGold} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Weight (Grams)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    placeholder="Enter weight in grams"
+                    value={goldForm.grams}
+                    onChange={(e) => {
+                      const newGrams = e.target.value
+                      setGoldForm({...goldForm, grams: newGrams})
+                      
+                      // Auto-calculate value if current rate is available and we have grams
+                      if (currentGoldRate && newGrams) {
+                        const calculatedValue = (parseFloat(newGrams) * parseFloat(currentGoldRate)).toFixed(2)
+                        setGoldForm(prev => ({...prev, grams: newGrams, value: calculatedValue}))
+                      }
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Value (₹)
+                    {currentGoldRate && goldForm.grams && (
+                      <span className="text-sm text-gray-500 ml-2">
+                        (Auto-calculated: ₹{(parseFloat(goldForm.grams) * parseFloat(currentGoldRate)).toFixed(2)})
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Enter total purchase value"
+                    value={goldForm.value}
+                    onChange={(e) => setGoldForm({...goldForm, value: e.target.value})}
+                    className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    {currentGoldRate && goldForm.grams 
+                      ? "Value auto-calculated based on current rate (you can modify if needed)" 
+                      : "Enter the actual purchase value"
+                    }
+                  </p>
+                </div>
+                {goldForm.grams && goldForm.value && (
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <div className="text-sm text-gray-600">Rate per gram:</div>
+                    <div className="text-lg font-semibold text-gray-700">
+                      ₹{calculateRatePerGram(parseFloat(goldForm.value), parseFloat(goldForm.grams)).toFixed(2)}/g
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Purchase Date
+                  </label>
+                  <DatePicker
+                    selected={goldForm.date}
+                    onChange={(date: Date | null) => setGoldForm({...goldForm, date: date})}
+                    placeholder="Purchase Date (today if empty)"
+                    maxDate={getToday()}
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1 px-6 py-3 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={formLoading}
+                    className="flex-1 p-3 rounded-md transition-all font-medium text-white flex items-center justify-center gap-2 transform hover:scale-105 disabled:transform-none disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800"
+                  >
+                    {formLoading && (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                    Add Gold Purchase
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
