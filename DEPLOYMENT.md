@@ -63,7 +63,9 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 
 # Database (PostgreSQL for production)
-DATABASE_URL=postgresql://username:password@host:port/database
+# Both URLs required for connection pooling (Neon/Vercel)
+DATABASE_URL=postgresql://username:password@pooled-host:port/database?pgbouncer=true&sslmode=require
+DIRECT_URL=postgresql://username:password@direct-host:port/database?sslmode=require
 
 # Email Service (Resend)
 RESEND_API_KEY=re_xxxxxxxxxx
