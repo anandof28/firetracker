@@ -11,26 +11,33 @@ export async function getAuthenticatedUser() {
     throw new Error('Unauthorized')
   }
 
-  // Get user details from Clerk
-  const client = await clerkClient()
-  const clerkUser = await client.users.getUser(userId)
-  const email = clerkUser.emailAddresses[0]?.emailAddress || `${userId}@clerk-user.com`
+  try {
+    // Check if user exists first to avoid unnecessary upserts
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true }
+    })
 
-  // Ensure user exists in our database
-  await prisma.user.upsert({
-    where: { id: userId },
-    update: {
-      updatedAt: new Date(),
-      email: email, // Update email in case it changed
-    },
-    create: {
-      id: userId,
-      email: email,
-      name: clerkUser.firstName && clerkUser.lastName 
-        ? `${clerkUser.firstName} ${clerkUser.lastName}` 
-        : clerkUser.username || clerkUser.firstName || null,
-    },
-  })
+    // Only upsert if user doesn't exist
+    if (!existingUser) {
+      const client = await clerkClient()
+      const clerkUser = await client.users.getUser(userId)
+      const email = clerkUser.emailAddresses[0]?.emailAddress || `${userId}@clerk-user.com`
+
+      await prisma.user.create({
+        data: {
+          id: userId,
+          email: email,
+          name: clerkUser.firstName && clerkUser.lastName 
+            ? `${clerkUser.firstName} ${clerkUser.lastName}` 
+            : clerkUser.username || clerkUser.firstName || null,
+        },
+      })
+    }
+  } catch (error) {
+    // Log but don't fail - user authentication is more important than database sync
+    console.error('Error syncing user to database:', error)
+  }
 
   return { userId }
 }
