@@ -52,43 +52,91 @@ fire-tracker/
 ## ✨ Features
 
 ### 🏦 Account Management
-- **Create and manage multiple financial accounts**
-- **Track account balances in real-time**
-- **Professional data grid with sorting and filtering**
-- **Account deletion with confirmation dialogs**
+- **Multi-account support** - Manage multiple bank accounts (Savings, Current, Credit Card, etc.)
+- **Real-time balance tracking** - Automatic balance updates based on transactions
+- **Account details** - Name, account number (masked: **** 1234), balance, type
+- **Account selector** - Filter dashboard by specific account or view all accounts
+- **Indian currency formatting** - Proper comma placement (₹1,00,000 format)
+- **CRUD operations** - Create, view, edit, and delete accounts
 
 ### 💰 Fixed Deposits (FDs)
-- **Comprehensive FD tracking with account relationships**
-- **Historical FD entry support (past start dates)**
-- **Automatic maturity amount calculations**
+- **Comprehensive FD tracking** - Principal, interest rate, start/end dates
+- **Account linking** - Associate FDs with bank accounts
+- **Maturity calculations** - Automatic maturity amount and interest calculations
 - **Smart maturity notifications:**
   - 🚨 **Overdue FDs** (past maturity date)
   - ⏰ **Approaching maturity** (within 45 days)
-- **Account-linked FD creation**
-- **Professional AG Grid with custom cell renderers**
+- **Historical support** - Add FDs with past start dates
+- **Quick Add modal** - Add FDs directly from dashboard
+- **Total portfolio value** - Aggregate FD investment tracking
 
 ### 🥇 Gold Investment Tracking
-- **Track gold investments by weight (grams) and value**
-- **Date-based investment records**
-- **Total portfolio value calculations**
-- **Professional data management interface**
+- **Weight-based tracking** - Record gold by grams and purchase value
+- **Purchase date tracking** - Historical gold investment records
+- **Total portfolio display** - Combined weight and value (e.g., 570g = ₹37,24,800)
+- **Quick Add modal** - Add gold purchases from dashboard
+- **Price per gram calculation** - Automatic unit price calculation
+- **Portfolio overview** - Total holdings value
 
 ### 💳 Transaction Management
-- **Income and expense transaction tracking**
-- **Category-based organization**
-- **Account-linked transactions**
-- **Date-based filtering and sorting**
-- **Notes and descriptions support**
+- **Dual transaction types** - Income and Expense tracking
+- **Rich categories:**
+  - **Income**: Salary, Business, Investment, Freelance, Rental, Other
+  - **Expense**: Food, Transport, Shopping, Bills, Entertainment, Other
+- **Transaction details** - Amount, category, date, account, optional notes
+- **Account linking** - Associate transactions with specific bank accounts
+- **Recent activity** - Last 7 days transactions on dashboard
+- **Full history page** - Complete transaction listing with filters
+- **Real-time balance updates** - Account balances update automatically
+- **Modal-based creation** - Add transactions without page navigation
+
+### 🏠 Loan & EMI Management
+- **Active loan tracking** - Monitor all ongoing loans with details
+- **Loan details** - Principal, interest rate, tenure, EMI amount, lender info
+- **EMI calculations** - Monthly payment amounts and remaining EMIs
+- **Balance tracking** - Current outstanding balance for each loan
+- **Payment progress** - Track paid amount and remaining obligations
+- **Interest tracking** - Total interest paid calculations
+- **Loan status** - Active/inactive loan management
+- **Dashboard snapshot** - Top 3 active loans with quick overview
+- **Monthly EMI overview** - Total monthly obligations displayed
+
+### 📈 Mutual Funds Portfolio
+- **Fund search** - Search 40,000+ mutual funds via live API (api.mfapi.in)
+- **Performance tracking:**
+  - Returns percentage (color-coded: green for profit, red for loss)
+  - Current value vs invested amount
+  - Absolute returns calculation
+- **Fund details** - Scheme name, fund house, scheme type, category
+- **Unit & pricing** - Track units held and average purchase price
+- **NAV updates** - Real-time Net Asset Value fetching and auto-refresh
+- **Top performers** - Dashboard section showing top 6 performing funds
+- **Portfolio page** - Complete mutual funds listing with all details
+- **Tags & notes** - Categorize and annotate fund investments
+- **SIP tracking** - Systematic Investment Plan support
+- **CRUD operations** - Create, view, edit, delete fund entries
 
 ### 📊 Dashboard Analytics
-- **Comprehensive portfolio overview**
-- **Real-time asset calculations:**
-  - Total account balances
-  - FD investments and maturity values
-  - Gold portfolio value
-  - Net cash flow analysis
-- **Smart notifications for FD maturities**
-- **Visual cards with color-coded metrics**
+- **Financial summary cards:**
+  - Available Balance (with account selector)
+  - Net Worth (Assets - Liabilities)
+  - Monthly EMI obligations
+  - Quick Actions panel
+- **Assets overview:**
+  - Bank Accounts (count + total balance)
+  - Fixed Deposits (count + total investment)
+  - Gold Holdings (weight + value)
+  - Active Loans (count + outstanding balance)
+- **Income vs Expense chart:**
+  - Monthly bar chart for current year
+  - Hover tooltips with exact amounts
+  - Color-coded bars (green for income, pink for expenses)
+  - Real transaction data (no dummy data)
+  - Dynamic scaling
+- **Recent transactions** - Last 7 days activity with categories
+- **Top performing mutual funds** - Best 6 funds with returns
+- **Loans snapshot** - Top 3 active loans display
+- **Smart notifications** - FD maturity alerts
 
 ## 🛠 Technology Stack
 
