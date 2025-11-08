@@ -24,20 +24,24 @@ const isProtectedRoute = createRouteMatcher([
   '/api/import-portfolio(.*)'
 ])
 
-const isPublicApiRoute = createRouteMatcher([
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/health',
   '/api/gold-rate',
-  '/api/test-db',
-  '/api/health'
+  '/api/test-db'
 ])
 
-export default clerkMiddleware(async (auth, req) => {
-  // Allow public access to monitoring endpoints
-  if (isPublicApiRoute(req)) {
+export default clerkMiddleware((auth, req) => {
+  // Allow public routes
+  if (isPublicRoute(req)) {
     return
   }
   
+  // Protect all other routes
   if (isProtectedRoute(req)) {
-    await auth.protect()
+    auth.protect()
   }
 })
 
