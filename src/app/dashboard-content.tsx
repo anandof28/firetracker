@@ -134,9 +134,27 @@ export default function DashboardContent() {
         })
       ])
 
+      // Log response statuses for debugging
+      console.log('API Response Statuses:', {
+        accounts: accountsRes.status,
+        fds: fdsRes.status,
+        gold: goldRes.status,
+        transactions: transactionsRes.status,
+        loans: loansRes.status,
+        mutualFunds: mfRes.ok ? 200 : 'failed'
+      })
+
       // Check critical APIs (all except mutual-funds which is optional)
       if (!accountsRes.ok || !fdsRes.ok || !goldRes.ok || !transactionsRes.ok || !loansRes.ok) {
-        throw new Error('One or more critical fetches failed')
+        const failedApis = []
+        if (!accountsRes.ok) failedApis.push(`accounts (${accountsRes.status})`)
+        if (!fdsRes.ok) failedApis.push(`fds (${fdsRes.status})`)
+        if (!goldRes.ok) failedApis.push(`gold (${goldRes.status})`)
+        if (!transactionsRes.ok) failedApis.push(`transactions (${transactionsRes.status})`)
+        if (!loansRes.ok) failedApis.push(`loans (${loansRes.status})`)
+        
+        console.error('Failed APIs:', failedApis)
+        throw new Error(`Failed to load: ${failedApis.join(', ')}`)
       }
 
       const [accountsData, fdsData, goldData, transactionsData, loansData, mfData] = await Promise.all([
@@ -156,7 +174,7 @@ export default function DashboardContent() {
       setMutualFunds(mfData || [])
     } catch (err) {
       console.error('Dashboard fetch error:', err)
-      setError('Unable to load your data right now. Please try again.')
+      setError('Unable to load your data right now. Please try again.\n\nIf this keeps happening, check your network or refresh the page.')
     } finally {
       setLoading(false)
     }
