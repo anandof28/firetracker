@@ -122,17 +122,18 @@ export default function DashboardContent() {
   const fetchAllData = async () => {
     try {
       setError('')
-      const [accountsRes, fdsRes, goldRes, transactionsRes, loansRes, mfRes] = await Promise.all([
-        fetch('/api/accounts'),
-        fetch('/api/fds'),
-        fetch('/api/gold'),
-        fetch('/api/transactions'),
-        fetch('/api/loans'),
-        fetch('/api/mutual-funds').catch(err => {
-          console.error('Mutual funds API failed:', err)
-          return { ok: false, json: async () => [] }
-        })
-      ])
+      
+      // Fetch sequentially to avoid overwhelming connection pool
+      // This is slower but more reliable with limited database connections
+      const accountsRes = await fetch('/api/accounts')
+      const fdsRes = await fetch('/api/fds')
+      const goldRes = await fetch('/api/gold')
+      const transactionsRes = await fetch('/api/transactions')
+      const loansRes = await fetch('/api/loans')
+      const mfRes = await fetch('/api/mutual-funds').catch(err => {
+        console.error('Mutual funds API failed:', err)
+        return { ok: false, json: async () => [] }
+      })
 
       // Log response statuses for debugging
       console.log('API Response Statuses:', {
@@ -157,14 +158,12 @@ export default function DashboardContent() {
         throw new Error(`Failed to load: ${failedApis.join(', ')}`)
       }
 
-      const [accountsData, fdsData, goldData, transactionsData, loansData, mfData] = await Promise.all([
-        accountsRes.json(),
-        fdsRes.json(),
-        goldRes.json(),
-        transactionsRes.json(),
-        loansRes.json(),
-        mfRes.ok ? mfRes.json() : Promise.resolve([])
-      ])
+      const accountsData = await accountsRes.json()
+      const fdsData = await fdsRes.json()
+      const goldData = await goldRes.json()
+      const transactionsData = await transactionsRes.json()
+      const loansData = await loansRes.json()
+      const mfData = mfRes.ok ? await mfRes.json() : []
 
       setAccounts(accountsData)
       setFds(fdsData)
